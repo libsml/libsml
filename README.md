@@ -1,2 +1,2 @@
 # libsml
-All projects of this libsml.
+A library tells something about machine learning.
