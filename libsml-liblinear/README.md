@@ -1,12 +1,25 @@
-Something about Machine Learning.
+Distributed liblinear.
 ==================================
-  A machine learning library, including distributed L-BFGS, distributed liblinear, etc.
+  A distributed implementation of liblinear.
 
-[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
+1.Support
 -----------------------------------
-A distributed implemention of L-BFGS, supporting L1-regularization, L2-regularization and three modes(local, mapreduce and spark) to train/test a model.
+1)Trust region Newton method(TRON)
+2)L2 normalization logistic regression
+3)Three modes(local, mr(mapreduce) and spark) to train/test a model
+4)Can be configured to choose run with using less memory(just one array of weight is stored in every node, the memory used in client is the same) but slower, or more memory but faster.
+This is useful when the feature number is large.
 
-
-[Distributed liblinear](https://github.com/libsml/libsml/tree/master/libsml-liblinear)
+2.Features
 -----------------------------------
-A distributed implemention of liblinear, supporting TRON and three modes(local, mapreduce and spark) to train/test a model.
+1)Use configuration file to configure, rather than options.
+2)Faster than the implementation of [spark liblinear](http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/distributed-liblinear/)
+
+3.Build
+-----------------------------------
+1)You should first install [commons](https://github.com/libsml/libsml/tree/master/commons) and [libsml-super](https://github.com/libsml/libsml/tree/master/libsml-super)
+2)Run "mvn package"
+
+4.Reference
+-----------------------------------
+C.-Y. Lin, C.-H. Tsai, C.-P. Lee, and C.-J. Lin. Large-scale Logistic Regression and Linear Support Vector Machines Using Spark, IEEE International Conference on Big Data 2014

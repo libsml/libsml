@@ -1,4 +1,4 @@
-Something about Machine Learning.
+Something about Machine Learning Library.
 ==================================
   A machine learning library, including distributed L-BFGS, distributed liblinear, etc.
 
