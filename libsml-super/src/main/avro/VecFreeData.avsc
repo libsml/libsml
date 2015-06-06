@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "VecFreeData",
+  "namespace": "com.sohu.mllib.data.avro",
+  "fields": [
+    {
+      "name": "index",
+      "type": {
+        "type": "record",
+        "name": "Index",
+        "fields": [
+          {
+            "name": "i",
+            "type": "int"
+          },
+          {
+            "name": "j",
+            "type": "int"
+          }
+        ]
+      }
+    },
+    {
+      "name": "value",
+      "type": "float"
+    }
+  ]
+}

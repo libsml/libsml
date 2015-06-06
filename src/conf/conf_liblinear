@@ -1,0 +1,50 @@
+##loss=lr
+##num=3
+progress.file=process
+##loss.lr.mr.less_memory=true
+
+mode=local
+
+#default 0
+optimization.l2.c=1
+optimization.max_iterations=300
+test.threshold=0.5
+
+#w.path
+
+data.bias=1
+data.format=avro
+
+#lbfgs parameter
+optimization.liblinear.epsilon=1.5e-5
+#optimization.l1.c=1
+#optimization.l1.start=1
+#optimization.l1.end=124
+
+log.file=log/log
+
+#data parameter
+#include the bias feature
+data.feature.number=124
+
+output.force.overwrite=true
+#input.paths=hy/lbfgs/data/train
+#output.path=hy/lbfgs/out
+#test.path=hy/lbfgs/data/test
+
+input.paths=./data/a9a.avro
+output.path=./result
+test.paths=./data/a9a.avro
+
+#hadoop config for all mapreduce
+hadoop.mapreduce.job.user.classpath.first=true
+
+#mr1 parameter
+#n1.hadoop.mapreduce.job.user.classpath.first=true
+n1.hadoop.mapreduce.job.reduces=1
+n1.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+n1.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+n1.hadoop.mapreduce.job.name=lbfgs_test_mr1
+
+#mr2 parameter
+#n2.hadoop.mapreduce.job.user.classpath.first=true

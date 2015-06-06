@@ -1,0 +1,36 @@
+{
+  "type": "record",
+  "name": "CRData",
+  "namespace": "com.sohu.mllib.data.avro",
+  "fields": [
+    {
+      "name": "y",
+      "type": "float"
+    },
+    {
+      "name": "Features",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Entry",
+          "fields": [
+            {
+              "name": "index",
+              "type": "int"
+            },
+            {
+              "name": "value",
+              "type": "float"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "weight",
+      "type": "float",
+      "default": 1.0
+    }
+  ]
+}
