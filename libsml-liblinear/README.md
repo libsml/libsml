@@ -7,7 +7,7 @@ Distributed liblinear.
 * Trust region Newton method(TRON)</br>
 * L2 normalization logistic regression</br>
 * Three modes(local, mr(mapreduce) and spark) to train/test a model</br>
-* Can be configured to choose run with using less memory(just one array of weight is stored in every node, the memory used in client is the same) but slower, or more memory but faster.
+* Can be configured to choose run with less memory(just one array of weight is stored in every node, the memory used in client is the same) but slower, or more memory but faster.
 This is useful when the feature number is large.
 
 2.Features
@@ -22,4 +22,7 @@ This is useful when the feature number is large.
 
 4.Reference
 -----------------------------------
-* C.-Y. Lin, C.-H. Tsai, C.-P. Lee, and C.-J. Lin. Large-scale Logistic Regression and Linear Support Vector Machines Using Spark, IEEE International Conference on Big Data 2014
+* Lin, C.-Y., Tsai, C.-H., Lee, C.-P., and Lin, C.-J. (2014). Large-scale logistic regression and
+  linear support vector machines using Spark. In IEEE BigData
+* Lin, C.-J., Weng, R. C., and Keerthi, S. S. (2008). Trust region Newton method for largescale
+  logistic regression. JMLR, 9:627–650.

@@ -1,10 +1,10 @@
 package com.github.libsml.liblinear;
 
-import com.github.libsml.Config;
-import com.github.libsml.Configs;
-import com.github.libsml.liblinear.core.LiblinearParameter;
 import com.github.libsml.Commands;
+import com.github.libsml.Config;
+import com.github.libsml.MLContext;
 import com.github.libsml.commons.util.CommandUtils;
+import com.github.libsml.liblinear.core.LiblinearParameter;
 import com.github.libsml.liblinear.core.Tron;
 
 /**
@@ -13,8 +13,9 @@ import com.github.libsml.liblinear.core.Tron;
 public class LiblinearMain {
 
 
-    private static LiblinearParameter generateParameter(Config config) {
+    private static LiblinearParameter generateParameter(MLContext ctx) {
 
+        Config config=ctx.getConf();
         LiblinearParameter para = new LiblinearParameter();
 
         para.epsilon = config.getFloat("optimization.liblinear.epsilon", para.epsilon);
@@ -31,20 +32,21 @@ public class LiblinearMain {
 
         CommandUtils.checkArgument(args != null && args.length > 0, Commands.helpString());
 
-        Config conf = Config.createFromFile(args[0]);
-        Configs.outputPath(conf);
+        MLContext ctx = new MLContext(args[0]).init();
 
-        Tron tron = new Tron(Configs.getLossFunction(conf)
-                , Configs.getProgressFunction(conf)
-                , Configs.getEvaluatorFunction(conf)
-                , generateParameter(conf));
+        Tron tron = new Tron(ctx.getLossFunction()
+                , ctx.getProgressFunction()
+                , ctx.getEvaluatorFunction()
+                , generateParameter(ctx));
 
-        int featureNum = Configs.getFeatureNum(conf);
-        float bias = Configs.getBias(conf);
+        int featureNum = ctx.getFeatureNum();
+        float bias = ctx.getBias();
         if (bias > 0) {
             featureNum++;
         }
         float[] w = new float[featureNum];
-        tron.tron(Configs.getPrior(w, conf));
+        tron.tron(ctx.getPrior(w));
+
+        ctx.destroy();
     }
 }

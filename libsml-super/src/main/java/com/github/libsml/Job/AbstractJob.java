@@ -1,6 +1,7 @@
 package com.github.libsml.Job;
 
 import com.github.libsml.Config;
+import com.github.libsml.MLContext;
 import com.github.libsml.data.Datas;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -10,77 +11,68 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static com.github.libsml.Configs.*;
-
 
 /**
  * Created by huangyu on 15/5/24.
  */
 public abstract class AbstractJob {
-    protected final Config config;
-    protected final Configuration configuration;
+//    protected final Config config;
+//    protected final Configuration configuration;
 
-    public AbstractJob(Config config) {
+    protected MLContext ctx;
 
-        this.config = config;
-        this.configuration=new Configuration();
+    public AbstractJob(MLContext ctx) {
+        this.ctx=ctx;
+
     }
 
 
     protected String getRootPathString(){
-        return getOutputPath(config);
+        return ctx.getOutputPath();
     }
 
     protected String getDataPathsString(){
-        return getInputPaths(config);
+        return ctx.getInputPaths();
     }
 
     protected String getTestPathsString(){
-        return config.get("test.paths");
+        return ctx.getTestPath();
     }
 
     protected Path getOutPath(String sub){
         return new Path(getRootPathString(),sub);
     }
 
-    protected Configuration getConfiguration(){
-        return configuration;
+    protected Configuration getConfiguration(String name){
+        return ctx.getHadoopConfWithInitation(name);
     }
 
     protected Config getConfig(){
-        return config;
+        return ctx.getConf();
     }
 
     protected boolean lessMemory(){
-        return config.getBoolean("loss.lr.mr.less_memory", false);
+        return ctx.isLessMemory();
     }
 
-    protected void addConfigWithPrefix(String ... prefixs){
-        if(prefixs!=null){
-            for (String prefix:prefixs){
-                config.addConfig(configuration, prefix);
-            }
-        }
-    }
-
-    protected void addConfig(String ... keys){
+    protected void addConfig(Configuration configuration,String ... keys){
         if(keys!=null){
             for (String key :keys){
-                if(config.contains(key)) {
-                    configuration.set(key, config.get(key));
+                if(getConfig().contains(key)) {
+                    configuration.set(key, getConfig().get(key));
                 }
             }
         }
     }
 
-    protected void set(String key,String value){
+    protected void set(Configuration configuration,String key,String value){
         configuration.set(key,value);
     }
 
-    protected void addFloatArrayCacheFile(float[] array, String sub, String link, Job job)
+    protected void addFloatArrayCacheFile(Configuration configuration,float[] array, String sub, String link, Job job)
             throws IOException, URISyntaxException {
         Path tmpPath = getOutPath(sub);
-        Datas.writeArrayOverwrite(tmpPath, getConfiguration(), array);
+        Datas.writeArrayOverwrite(tmpPath, configuration, array);
         job.addCacheFile(new URI(tmpPath.toString() + "#" + link));
     }
 

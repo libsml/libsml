@@ -1,16 +1,18 @@
-##loss=lr
-##num=3
-progress.file=process
+
+
+
+
+log.file=log/log.log
 ##loss.lr.mr.less_memory=true
 
 mode=local
 
-#default 0
 optimization.l2.c=1
 optimization.max_iterations=300
 test.threshold=0.5
 
-#w.path
+#model.prior.path=src/conf/model
+#model.prior.mode=local_text
 
 data.bias=1
 data.format=avro
@@ -40,9 +42,6 @@ optimization.delta=1e-5f
 data.feature.number=124
 
 output.force.overwrite=true
-#input.paths=hy/lbfgs/data/train
-#output.path=hy/lbfgs/out
-#test.path=hy/lbfgs/data/test
 
 input.paths=./data/a9a.avro
 output.path=./result
@@ -53,10 +52,10 @@ hadoop.mapreduce.job.user.classpath.first=true
 
 #mr1 parameter
 #n1.hadoop.mapreduce.job.user.classpath.first=true
-n1.hadoop.mapreduce.job.reduces=1
-n1.hadoop.mapreduce.input.fileinputformat.split.minsize=1
-n1.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
-n1.hadoop.mapreduce.job.name=lbfgs_test_mr1
+lg.hadoop.mapreduce.job.reduces=1
+lg.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+lg.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
 
 #mr2 parameter
 #n2.hadoop.mapreduce.job.user.classpath.first=true
+hv.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000

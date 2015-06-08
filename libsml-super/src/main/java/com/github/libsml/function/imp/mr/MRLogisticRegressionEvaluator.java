@@ -1,13 +1,14 @@
 package com.github.libsml.function.imp.mr;
 
 import com.github.libsml.Job.AbstractJob;
-import com.github.libsml.Config;
+import com.github.libsml.MLContext;
 import com.github.libsml.commons.util.HadoopUtils;
 import com.github.libsml.data.Datas;
 import com.github.libsml.data.avro.CRData;
 import com.github.libsml.data.avro.Entry;
 import com.github.libsml.function.EvaluatorFunction;
 import org.apache.avro.mapred.AvroKey;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -27,9 +28,10 @@ import static com.github.libsml.StaticParameter.*;
 public class MRLogisticRegressionEvaluator extends AbstractJob implements EvaluatorFunction {
 
 //    private final Config config;
+    public static final String EVALUATE="evaluate";
 
-    public MRLogisticRegressionEvaluator(Config config) {
-        super(config);
+    public MRLogisticRegressionEvaluator(MLContext ctx) {
+        super(ctx);
     }
 
     @Override
@@ -51,9 +53,9 @@ public class MRLogisticRegressionEvaluator extends AbstractJob implements Evalua
             throws IOException, URISyntaxException, ClassNotFoundException, InterruptedException {
 
 
+        Configuration configuration = getConfiguration(EVALUATE);
 
-        addConfigWithPrefix(HADOOP_PREFIX, HADOOP_PREFIX4);
-        addConfig("data.feature.number", "data.bias","test.threshold");
+        addConfig(configuration,"data.feature.number", "data.bias","test.threshold");
 
         Job job = HadoopUtils.prepareAvroJob(getTestPathsString()
                 , getOutPath(TEST_PATH)
@@ -65,16 +67,16 @@ public class MRLogisticRegressionEvaluator extends AbstractJob implements Evalua
                 , LREvaluatorReducer.class
                 , Text.class
                 , NullWritable.class
-                , getConfiguration()
+                , configuration
                 , true);
         job.setNumReduceTasks(1);
 
-        addFloatArrayCacheFile(w, W_SUB_PATH + "/hv_weight", WEIGHT_LINK, job);
+        addFloatArrayCacheFile(configuration,w, W_SUB_PATH + "/hv_weight", WEIGHT_LINK, job);
 
         job.setJobName("iteration_" + k + "_" + job.getJobName());
 
         waitForCompletion(job);
-        return new Statistics(HadoopUtils.readString(getOutPath(TEST_PATH), getConfiguration()));
+        return new Statistics(HadoopUtils.readString(getOutPath(TEST_PATH), configuration));
 
 
     }

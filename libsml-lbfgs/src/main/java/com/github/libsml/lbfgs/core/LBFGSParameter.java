@@ -1,8 +1,10 @@
 package com.github.libsml.lbfgs.core;
 
+import com.github.libsml.Mode;
+
 public final class LBFGSParameter {
 
-	public String mode = "local";
+	public Mode mode = Mode.LOCAL;
 	
 	/**
 	 * The number of corrections to approximate the inverse hessian matrix. The

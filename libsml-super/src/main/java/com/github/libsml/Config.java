@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class Config {
-    private final Map<String, String> configMap;
+    final Map<String, String> configMap;
     private final static Logger log = LoggerFactory.getLogger(Config.class);
 
     private Config(String confPath) throws IOException {
@@ -25,8 +25,6 @@ public class Config {
             configMap.put(propName, properties.getProperty(propName));
         }
         input.close();
-        checkArgument();
-        com.github.libsml.Logger.initLogger(configMap);
 //        PropertyConfigurator.configure(
 //                Config.class.getResourceAsStream("/mllib_log4j.properties"));
 
@@ -54,24 +52,7 @@ public class Config {
         }
     }
 
-    private void checkArgument() {
 
-        Preconditions.checkArgument(contains("input.paths")
-                , "Configuration check exception:input paths are needed.");
-        Preconditions.checkArgument(contains("output.path")
-                , "Configuration check exception:out path is needed.");
-        Preconditions.checkArgument(contains("data.feature.number")
-                , "Configuration check exception:feature number is needed.");
-
-        int fn = getInt("data.feature.number", -2);
-        Preconditions.checkArgument(fn > 0
-                , "Configuration check exception:feature number=" + fn + " is less than 0.");
-
-        String mode = get("mode", "local");
-        Preconditions.checkArgument("local".equals(mode) || "mr".equals(mode)
-                , "Configuration check exception:mode=" + mode);
-
-    }
 
     public String get(String key) {
         return configMap.get(key);

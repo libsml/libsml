@@ -11,10 +11,11 @@ import org.apache.spark.rdd.RDD
 /**
  * Created by huangyu on 15/6/6.
  */
-class SparkLogisticRegression(val conf: Config, val mlCtx: MLContext, val dataPoints: RDD[DataPoint]) extends LossFunction {
+class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
 
 
   private[this] val ctx = mlCtx.sparkContext()
+  private[this] val dataPoints=mlCtx.getInputDataRDD
 
   private val bias = mlCtx.getBias
   private val l2C = mlCtx.getL2C
@@ -32,7 +33,7 @@ class SparkLogisticRegression(val conf: Config, val mlCtx: MLContext, val dataPo
       wBroad = ctx.broadcast(w)
       oldK = k
     }
-    lossAndGrad(mlCtx.inputDataRDD(), w, wBroad, bias, l2C, g, k)
+    lossAndGrad(mlCtx.getInputDataRDD(), w, wBroad, bias, l2C, g, k)
 
   }
 

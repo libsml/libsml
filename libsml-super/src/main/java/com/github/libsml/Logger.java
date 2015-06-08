@@ -10,7 +10,7 @@ import java.util.Map;
 public class Logger {
 
 
-    public static PrintStream logger=null;
+    public static PrintStream logger = null;
     /*
     public static PrintStream getInstante(Config config) {
 
@@ -29,17 +29,16 @@ public class Logger {
     }
     */
 
-    public static synchronized void log(String msg){
+    public static synchronized void log(String msg) {
         logger.print(msg);
     }
 
     public static synchronized void log(String format, Object... args) {
-           logger.printf(format,args);
+        logger.printf(format, args);
     }
 
-    public static synchronized void  initLogger(Map<String, String> configMap){
+    public static synchronized void initLogger(String logPath) {
         if (logger == null) {
-            String logPath = configMap.get("log.file");
             try {
                 logger = logPath == null ? System.out : new PrintStream(logPath);
             } catch (FileNotFoundException e) {

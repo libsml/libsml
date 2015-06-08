@@ -1,9 +1,9 @@
 package com.github.libsml.function.imp;
 
 
-import com.github.libsml.Configs;
+import com.github.libsml.MLContext;
+import com.github.libsml.Mode;
 import com.github.libsml.function.ProgressFunction;
-import com.github.libsml.Config;
 import com.github.libsml.commons.util.PrintUtils;
 import com.github.libsml.function.EvaluatorFunction;
 import org.slf4j.Logger;
@@ -24,17 +24,17 @@ public class Progress implements ProgressFunction {
 
     public static final int FEATURE_PRINT_NUM = 10;
     //    private PrintStream log;
-    private final Config config;
+    private final MLContext ctx;
     private String outString;
 
     private float bestAuc = Float.MIN_VALUE;
     private int bestIndex = 1;
 
 
-    public Progress(Config config) {
-        this.config = config;
+    public Progress(MLContext ctx) {
+        this.ctx = ctx;
 
-        outString = config.contains("output.path") ? config.get("output.path") : null;
+        outString = ctx.getOutputPath();
         outString = outString.endsWith("/") ? outString : outString + "/";
 //        File outFile = new File(outString);
 //        if (outFile.exists() && !config.getBoolean("output.force.overwrite", true)) {
@@ -50,7 +50,7 @@ public class Progress implements ProgressFunction {
                         int n, int k, int ls, EvaluatorFunction.Statistics statistics) {
         com.github.libsml.Logger.log(stringFormat(x, g, fx, xnorm, gnorm, step, n, k, ls, statistics));
 //        Logger.logger.print(stringFormat(x, g, fx, xnorm, gnorm, step, n, k, ls, statistics));
-        if (outString != null && "local".equals(Configs.getMode(config))) {
+        if (outString != null && Mode.LOCAL==ctx.getMode()) {
             String fileString = outString + k;
             File file = new File(fileString);
             try {

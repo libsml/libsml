@@ -1,16 +1,16 @@
 package com.github.libsml.lbfgs;
 
+import com.github.libsml.Commands;
+import com.github.libsml.Config;
+import com.github.libsml.MLContext;
+import com.github.libsml.Mode;
+import com.github.libsml.commons.util.CommandUtils;
 import com.github.libsml.lbfgs.core.LBFGS;
 import com.github.libsml.lbfgs.core.LBFGSParameter;
 import com.github.libsml.lbfgs.core.LineSearchConstant;
 import com.github.libsml.lbfgs.function.VecFreeFunction;
 import com.github.libsml.lbfgs.function.imp.SingleVecFree;
 import com.github.libsml.lbfgs.function.imp.mr.MRVecFree;
-import com.github.libsml.Commands;
-import com.github.libsml.Config;
-import com.github.libsml.commons.util.CommandUtils;
-
-import static com.github.libsml.Configs.*;
 
 /**
  * Created by yellowhuang on 2015/5/19.
@@ -18,10 +18,11 @@ import static com.github.libsml.Configs.*;
 public class LBFGSMain {
 //    private static final Logger log = LoggerFactory.getLogger(LBFGSMain.class);
 
-    public static LBFGSParameter generateLBFGSParameter(Config config) {
+    public static LBFGSParameter generateLBFGSParameter(MLContext ctx) {
+        Config config = ctx.getConf();
         LBFGSParameter para = new LBFGSParameter();
 
-        para.mode = getMode(config);
+        para.mode = ctx.getMode();
         para.m = config.getInt("optimization.lbfgs.m", para.m);
 
         para.epsilon = config.getFloat("optimization.lbfgs.epsilon", para.epsilon);
@@ -51,38 +52,45 @@ public class LBFGSMain {
 
         CommandUtils.checkArgument(args != null && args.length > 0, Commands.helpString());
 
-        Config conf = Config.createFromFile(args[0]);
-        outputPath(conf);
-        LBFGSParameter parameter = generateLBFGSParameter(conf);
+        MLContext ctx = new MLContext(args[0]).init();
+        LBFGSParameter parameter = generateLBFGSParameter(ctx);
 
 
         //n>0,argument check in Config.java
-        int featureNum = getFeatureNum(conf);
-        float bias = getBias(conf);
+        int featureNum = ctx.getFeatureNum();
+        float bias = ctx.getBias();
         if (bias > 0) {
             featureNum++;
         }
         float[] w = new float[featureNum];
         float[] ptrFx = new float[1];
 
-        String mode = parameter.mode;
+        Mode mode = parameter.mode;
         VecFreeFunction vecFree = null;
 
-        if ("local".equals(mode)) {
-            vecFree = new SingleVecFree(parameter.m, featureNum);
-        } else if ("mr".equals(mode)) {
-            vecFree = new MRVecFree(conf);
-        } else {
-            throw new IllegalStateException("Configuraton exception:mode=" + mode);
+        switch (mode) {
+            case LOCAL:
+                vecFree = new SingleVecFree(parameter.m, featureNum);
+                break;
+            case MR:
+                vecFree = new MRVecFree(ctx.getConf());
+                break;
+            case SPARK:
+                //TODO:
+                break;
+            default:
+                throw new IllegalStateException("Configuraton exception:mode=" + mode);
         }
 
+
         LBFGS.lbfgs(featureNum
-                , getPrior(w, conf)
+                , ctx.getPrior(w)
                 , ptrFx
-                , getLossFunction(conf)
-                , getProgressFunction(conf)
-                , getEvaluatorFunction(conf)
+                , ctx.getLossFunction()
+                , ctx.getProgressFunction()
+                , ctx.getEvaluatorFunction()
                 , vecFree
                 , parameter);
+        ctx.destroy();
     }
 }
