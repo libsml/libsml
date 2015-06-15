@@ -5,6 +5,7 @@ package com.github.libsml.function.imp;
 import com.github.libsml.data.liblinear.Feature;
 import com.github.libsml.data.liblinear.Problem;
 import com.github.libsml.function.EvaluatorFunction;
+import com.github.libsml.model.Statistics;
 
 import java.util.Arrays;
 import java.util.Comparator;

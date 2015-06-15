@@ -7,6 +7,7 @@ import com.github.libsml.data.Datas;
 import com.github.libsml.data.avro.CRData;
 import com.github.libsml.data.avro.Entry;
 import com.github.libsml.function.EvaluatorFunction;
+import com.github.libsml.model.Statistics;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -55,7 +56,7 @@ public class MRLogisticRegressionEvaluator extends AbstractJob implements Evalua
 
         Configuration configuration = getConfiguration(EVALUATE);
 
-        addConfig(configuration,"data.feature.number", "data.bias","test.threshold");
+        addConfig(configuration,MLContext.DATA_FEATURE_NUMBER, MLContext.DATA_BIAS,MLContext.TEST_THRESHOLD);
 
         Job job = HadoopUtils.prepareAvroJob(getTestPathsString()
                 , getOutPath(TEST_PATH)

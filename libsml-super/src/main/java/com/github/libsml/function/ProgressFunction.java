@@ -1,6 +1,8 @@
 package com.github.libsml.function;
 
 
+import com.github.libsml.model.Statistics;
+
 public interface ProgressFunction {
 
 	/**
@@ -32,5 +34,5 @@ public interface ProgressFunction {
 	 *         non-zero value will cancel the optimization process.
 	 */
 	int progress(float[] x, float[] g, float fx, float xnorm, float gnorm,
-				 float step, int n, int k, int ls, EvaluatorFunction.Statistics statistics);
+				 float step, int n, int k, int ls, Statistics statistics);
 }

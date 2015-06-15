@@ -1,10 +1,18 @@
 package com.github.libsml.function.imp.spark
 
+import com.github.libsml.MLContext
+import com.github.libsml.commons.util.HadoopUtils
+import com.github.libsml.data.avro.Entry
 import com.github.libsml.data.liblinear.DataPoint
-import com.github.libsml.function.imp.spark.SparkLogisticRegression._
-import com.github.libsml.{MLContext, Config}
+import com.github.libsml.data.liblinear.RDDData._
 import com.github.libsml.function.LossFunction
-import com.github.libsml.data.RDDDatas._
+import com.github.libsml.function.imp.spark.SparkLogisticRegression._
+import org.apache.avro.mapred.AvroKey
+import org.apache.avro.mapreduce.AvroKeyOutputFormat
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.NullWritable
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
+import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 
@@ -15,25 +23,20 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
 
 
   private[this] val ctx = mlCtx.sparkContext()
-  private[this] val dataPoints=mlCtx.getInputDataRDD
+  private[this] val dataPoints = mlCtx.getInputDataRDD
 
   private val bias = mlCtx.getBias
   private val l2C = mlCtx.getL2C
   private var wBroad: Broadcast[Array[Float]] = null
 
-  private var oldK = -1
 
   override def lossAndGrad(w: Array[Float], g: Array[Float], k: Int): Float = {
-    if (k > oldK) {
-
-      if (wBroad != null) {
-        wBroad.unpersist()
-      }
-
-      wBroad = ctx.broadcast(w)
-      oldK = k
+    if (wBroad != null) {
+      wBroad.unpersist()
     }
-    lossAndGrad(mlCtx.getInputDataRDD(), w, wBroad, bias, l2C, g, k)
+    wBroad = ctx.broadcast(w)
+    if (!mlCtx.isLessMemory) lossAndGrad(mlCtx.getInputDataRDD(), w, wBroad, bias, l2C, g, k)
+    else lossAndGradLessMemory(mlCtx.getInputDataRDD(), w, wBroad, bias, l2C, g, k)
 
   }
 
@@ -42,11 +45,6 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
                           wBroad: Broadcast[Array[Float]],
                           bias: Float, l2C: Float,
                           g: Array[Float], k: Int) = {
-
-    var reduceNum = weightMem.length / REDUCE_LEGHT
-    if (reduceNum > REDUCE_MAX_NUM) {
-      reduceNum = REDUCE_MAX_NUM
-    }
 
     var fun: Float = 0
     var lgRDD = dataPoints.mapPartitions(ds => {
@@ -69,15 +67,14 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
       //      ((-1, loss) :: generateListFromArray(gradient)).iterator
       generateLossAndGradientIterator(gradient, loss)
 
-    }).reduceByKey(_ + _, reduceNum)
-
+    }).reduceByKey(_ + _, getReduceSumNum(mlCtx))
     //L2 norm
     lgRDD = l2Norm(lgRDD, wBroad, l2C)
     lgRDD.persist()
 
     //save iteration result
     if (mlCtx.isSaveIterationResult) {
-      //TODO:save iteration result
+      saveResultFromRDD(lgRDD, k, mlCtx)
     }
     fun = readLossAndGradientFromRDD(lgRDD, g)
     lgRDD.unpersist()
@@ -91,11 +88,6 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
                                     wBroad: Broadcast[Array[Float]],
                                     bias: Float, l2C: Float,
                                     g: Array[Float], k: Int) = {
-
-    var reduceNum = weightMem.length / REDUCE_LEGHT
-    if (reduceNum > REDUCE_MAX_NUM) {
-      reduceNum = REDUCE_MAX_NUM
-    }
 
     var fun: Float = 0
     var lgRDD = dataPoints.mapPartitions(ds => {
@@ -142,7 +134,7 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
           }
         }
       }
-    }).reduceByKey(_ + _, reduceNum)
+    }).reduceByKey(_ + _, getReduceSumNum(mlCtx))
 
     //L2 norm
     lgRDD = l2Norm(lgRDD, wBroad, l2C)
@@ -150,7 +142,7 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
 
     //save iteration result
     if (mlCtx.isSaveIterationResult) {
-      //TODO:save iteration result
+      saveResultFromRDD(lgRDD, k, mlCtx)
     }
     fun = readLossAndGradientFromRDD(lgRDD, g)
     lgRDD.unpersist()
@@ -160,7 +152,8 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
 
 
   override def Hv(w: Array[Float], d: Array[Float], Hs: Array[Float], k: Int, cgIter: Int): Unit = {
-    Hv(w, wBroad, bias, l2C, dataPoints.sparkContext.broadcast(d), Hs, k, cgIter)
+    if (!mlCtx.isLessMemory) Hv(w, wBroad, bias, l2C, dataPoints.sparkContext.broadcast(d), Hs, k, cgIter)
+    else HvLessMemory(w, wBroad, bias, l2C, dataPoints.sparkContext.broadcast(d), Hs, k, cgIter)
   }
 
   def Hv(weightMem: Array[Float],
@@ -170,10 +163,6 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
          Hs: Array[Float],
          k: Int, cgIter: Int): Unit = {
 
-    var reduceNum = weightMem.length / REDUCE_LEGHT
-    if (reduceNum > REDUCE_MAX_NUM) {
-      reduceNum = REDUCE_MAX_NUM
-    }
 
     var lgRDD = dataPoints.mapPartitions(ds => {
       val weight = wBroad.value
@@ -186,7 +175,7 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
         xTv(data, xv(data, dWeight, bias) * data.weight * d, hv, bias)
       }
       generateArrayIterator(hv)
-    }).reduceByKey(_ + _, reduceNum)
+    }).reduceByKey(_ + _, getReduceSumNum(mlCtx))
 
     //L2 norm
     lgRDD = l2Norm(lgRDD, dBroad, l2C)
@@ -202,11 +191,6 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
                    dBroad: Broadcast[Array[Float]],
                    Hs: Array[Float],
                    k: Int, cgIter: Int): Unit = {
-
-    var reduceNum = weightMem.length / REDUCE_LEGHT
-    if (reduceNum > REDUCE_MAX_NUM) {
-      reduceNum = REDUCE_MAX_NUM
-    }
 
     var lgRDD = dataPoints.mapPartitions(ds => {
       new Iterator[(Int, Double)] {
@@ -237,7 +221,7 @@ class SparkLogisticRegression(val mlCtx: MLContext) extends LossFunction {
           (data.index(index - 1), data.value(index - 1) * d)
         }
       }
-    }).reduceByKey(_ + _, reduceNum)
+    }).reduceByKey(_ + _, getReduceSumNum(mlCtx))
 
     //L2 norm
     lgRDD = l2Norm(lgRDD, dBroad, l2C)
@@ -254,6 +238,8 @@ object SparkLogisticRegression {
   val REDUCE_LEGHT = 500000
   val REDUCE_MAX_NUM = 100
 
+  val REDUCE_SUM_NUMBER = "reduce.sum.number"
+
   def xv(x: DataPoint, v: Array[Float], b: Float): Double = {
     var xv: Double = 0
     var i = 0
@@ -267,16 +253,37 @@ object SparkLogisticRegression {
     xv
   }
 
-  def xTv(x: DataPoint, v: Double, xTv: Array[Double], b: Float) {
+  def xTv(x: DataPoint, v: Double, hv: Array[Double], b: Float) {
     var i = 0
     while (i < x.index.length) {
-      xTv(x.index(i)) += v * x.value(i)
+      hv(x.index(i)) += v * x.value(i)
       i += 1
     }
-    xTv(xTv.length - 1) += b * v
+    hv(hv.length - 1) += b * v
   }
 
-  def l2Norm(rdd: RDD[(Int, Double)], wBroad: Broadcast[Array[Float]], l2C: Float) = {
+  def saveResultFromRDD(rdd: RDD[(Int, Double)], k: Int, mlCtx: MLContext): Unit = {
+
+    val mode = mlCtx.getSaveIterationResultMode
+    val path = mlCtx.getOutputPath("w/" + k)
+    HadoopUtils.delete(mlCtx.sparkContext().hadoopConfiguration, new Path(path))
+    if (MLContext.HDFS_TEXT == mode) {
+      mlCtx.sparkContext().hadoopConfiguration.set(TextOutputFormat.SEPERATOR, ":")
+      rdd.saveAsNewAPIHadoopFile(path, classOf[Int], classOf[Double], classOf[TextOutputFormat[Int, Double]])
+      //      rdd.saveAsHadoopFile(path,)
+    } else if (MLContext.HDFS_AVRO == mode) {
+      rdd.map(l => {
+        (new Entry(l._1, l._2.toFloat), NullWritable.get())
+      }).
+        saveAsNewAPIHadoopFile(path, classOf[AvroKey[Entry]], classOf[NullWritable], classOf[AvroKeyOutputFormat[Entry]])
+    } else {
+      throw new IllegalStateException("Save iteration result exception:"
+        + MLContext.OUTPUT_ITERATION_MODE + "=" + mode)
+    }
+  }
+
+
+  def l2Norm(rdd: RDD[(Int, Double)], wBroad: Broadcast[Array[Float]], l2C: Float): RDD[(Int, Double)] = {
 
     if (l2C > 0) {
       rdd.map(d => {
@@ -298,9 +305,32 @@ object SparkLogisticRegression {
     else rdd
   }
 
+  def getExecutorNum(sc: SparkContext) = {
+    sc.getConf.getInt("spark.executor.instances", 1)
+  }
+
+  def getReduceSumNum(sc: MLContext): Int = {
+    val re = sc.getConf.getInt(REDUCE_SUM_NUMBER, getExecutorNum(sc.sparkContext()) / 2)
+    println("re:" + re)
+    re
+  }
+
 
   def main(args: Array[String]) {
-    println("ss")
+    val it = generateLossAndGradientIterator(Array(3f, 3.4f, 4.2f), 10f)
+    while (it.hasNext) {
+      print(it.next())
+    }
+    //    println("ss")
+    //    val a: Float = 3f
+    //    println(a.toFloat)
+
+    //    val conf = new SparkConf().setAppName("ScalaWordCount").setMaster("local[2]")
+    //    val ctx = new SparkContext(conf)
+    //    val as = new Array[Float](10)
+    //    val loss=readLossAndGradientFromRDD(ctx.parallelize(List(-1->3d,1->3.3d,2->3.2d)),as)
+    //    println(loss);
+
   }
 
 }

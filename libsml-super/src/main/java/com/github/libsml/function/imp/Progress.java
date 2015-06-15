@@ -6,6 +6,7 @@ import com.github.libsml.Mode;
 import com.github.libsml.function.ProgressFunction;
 import com.github.libsml.commons.util.PrintUtils;
 import com.github.libsml.function.EvaluatorFunction;
+import com.github.libsml.model.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public class Progress implements ProgressFunction {
 
     @Override
     public int progress(float[] x, float[] g, float fx, float xnorm, float gnorm, float step,
-                        int n, int k, int ls, EvaluatorFunction.Statistics statistics) {
+                        int n, int k, int ls,Statistics statistics) {
         com.github.libsml.Logger.log(stringFormat(x, g, fx, xnorm, gnorm, step, n, k, ls, statistics));
 //        Logger.logger.print(stringFormat(x, g, fx, xnorm, gnorm, step, n, k, ls, statistics));
         if (outString != null && Mode.LOCAL==ctx.getMode()) {
@@ -66,7 +67,7 @@ public class Progress implements ProgressFunction {
     }
 
     private String stringFormat(float[] x, float[] g, float fx, float xnorm, float gnorm,
-                                float step, int n, int k, int ls, EvaluatorFunction.Statistics statistics) {
+                                float step, int n, int k, int ls, Statistics statistics) {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 

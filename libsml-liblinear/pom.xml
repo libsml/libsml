@@ -43,7 +43,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.sohu.mllib.lbfgs.LBFGSMain</mainClass>
+                            <mainClass>com.github.libsml.liblinear.LiblinearMain</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

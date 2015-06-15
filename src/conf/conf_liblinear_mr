@@ -1,0 +1,37 @@
+log.file=liblinear.r
+mode=mr
+data.feature.number=240
+data.bias=1
+#model.prior.path
+#model.prior.mode=hdfs_avro
+optimization.l2.c=1
+#input.paths
+#output.path
+#test.paths
+output.iteration.save=false
+output.iteration.mode=local_avro
+output.force.overwrite=true
+memory.less=false
+#data.format=avro
+test.threshold=0.5
+
+optimization.max_iterations=300
+
+#liblinear parameter
+optimization.liblinear.epsilon=1.5e-5
+
+#hadoop config for all mapreduce
+hadoop.mapreduce.job.user.classpath.first=true
+
+#loss and gradient mapreduce parameter
+lg.hadoop.mapreduce.job.reduces=10
+lg.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+lg.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+# heissen vector mapreduce parameter
+hv.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+hv.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+#evaluate mapreduce parameter
+evaluate.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+evaluate.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000

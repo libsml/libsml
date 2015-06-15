@@ -52,7 +52,7 @@ public class LBFGSMain {
 
         CommandUtils.checkArgument(args != null && args.length > 0, Commands.helpString());
 
-        MLContext ctx = new MLContext(args[0]).init();
+        MLContext ctx = new MLContext(args[0],"lbfgs").init();
         LBFGSParameter parameter = generateLBFGSParameter(ctx);
 
 

@@ -1,0 +1,21 @@
+log.file=log/tron.log
+mode=local
+data.feature.number=124
+data.bias=1
+#model.prior.path
+#model.prior.mode=hdfs_avro
+optimization.l2.c=1
+input.paths=data/a9a.avro
+output.path=result
+test.paths=data/a9a.avro
+output.iteration.save=false
+output.iteration.mode=local_avro
+output.force.overwrite=true
+memory.less=false
+data.format=avro
+test.threshold=0.5
+
+optimization.max_iterations=300
+
+#liblinear parameter
+optimization.liblinear.epsilon=1.5e-30

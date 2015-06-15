@@ -4,8 +4,8 @@ import com.github.libsml.Logger;
 import com.github.libsml.function.EvaluatorFunction;
 import com.github.libsml.function.LossFunction;
 import com.github.libsml.function.ProgressFunction;
+import com.github.libsml.model.Statistics;
 
-import static com.github.libsml.Logger.log;
 import static com.github.libsml.commons.util.VecUtils.*;
 
 /**
@@ -112,7 +112,7 @@ public class Tron {
 
             xnorm = euclideanNorm(w);
             if (progress != null) {
-                EvaluatorFunction.Statistics statistics = evaluator == null ? null : evaluator.evaluate(w, iter);
+                Statistics statistics = evaluator == null ? null : evaluator.evaluate(w, iter);
 //                EvaluatorFunction.Statistics statistics=null;
                 if (progress.progress(w, g, f, xnorm, gnorm, delta, n, iter,
                         cg_iter, statistics) != 0) {

@@ -61,11 +61,11 @@ public class MRVecFree implements VecFreeFunction {
         try {
             vecsDotWithException(b, k, x, xp, g, gp, pg);
         } catch (ClassNotFoundException e) {
-            //TODO:
+            throw new IllegalStateException("Vectors dot exception:"+e.getMessage());
         } catch (InterruptedException e) {
-            //TODO:
+            throw new IllegalStateException("Vectors dot exception:"+e.getMessage());
         } catch (IOException e) {
-            //TODO:
+            throw new IllegalStateException("Vectors dot exception:"+e.getMessage());
         }
     }
 
@@ -128,7 +128,7 @@ public class MRVecFree implements VecFreeFunction {
         job.setPartitionerClass(VecsDotPartitioner.class);
 
         job.setNumReduceTasks(6 * bound);
-        job.setJobName("iteration_" + k + "_" + job.getJobName());
+        job.setJobName("iteration_" + k + "_lbfgs_vd");
 
         job.waitForCompletion(true);
 
@@ -167,13 +167,13 @@ public class MRVecFree implements VecFreeFunction {
         try {
             computeDirectWithException(d, theta, k);
         } catch (IOException e) {
-            // TODO:
+            throw new IllegalStateException("Compute direct exception:"+e.getMessage());
         } catch (URISyntaxException e) {
-            // TODO:
+            throw new IllegalStateException("Compute direct exception:"+e.getMessage());
         } catch (InterruptedException e) {
-            // TODO:
+            throw new IllegalStateException("Compute direct exception:"+e.getMessage());
         } catch (ClassNotFoundException e) {
-            // TODO:
+            throw new IllegalStateException("Compute direct exception:"+e.getMessage());
         }
     }
 
@@ -226,7 +226,7 @@ public class MRVecFree implements VecFreeFunction {
         job.setOutputValueClass(NullWritable.class);
 
         job.setCombinerClass(ComputeDirectCombiner.class);
-        job.setJobName("iteration_" + k + "_" + job.getJobName());
+        job.setJobName("iteration_" + k + "_lbfgs_cd");
 
         job.waitForCompletion(true);
 

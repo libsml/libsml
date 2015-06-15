@@ -1,0 +1,60 @@
+log.file=log/lbfgs.r
+mode=mr
+data.feature.number=124
+data.bias=1
+#model.prior.path
+#model.prior.mode=hdfs_avro
+optimization.l2.c=1
+#input.paths
+#output.path
+#test.paths
+output.iteration.save=false
+output.iteration.mode=local_avro
+output.force.overwrite=true
+memory.less=false
+data.format=avro
+test.threshold=0.5
+
+optimization.max_iterations=300
+
+#lbfgs parameter
+optimization.lbfgs.m=6
+optimization.lbfgs.epsilon=1.5e-5
+#owlqn,armijo,wolfe,strong_wolfe
+optimization.linesearch=wolfe
+optimization.linesearch.max_step=40
+optimization.min_step=1e-20
+optimization.max_step=1e+20
+optimization.ftol=1e-4
+optimization.wofle=0.9
+optimization.gtol=0.9
+#optimization.xtol=0
+#optimization.l1.c=1
+#optimization.l1.start=1
+#optimization.l1.end=124
+#optimization.past=2
+optimization.delta=1e-5f
+
+#hadoop config for all mapreduce
+hadoop.mapreduce.job.user.classpath.first=true
+
+#loss and gradient mapreduce parameter
+lg.hadoop.mapreduce.job.reduces=10
+lg.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+lg.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+# heissen vector mapreduce parameter
+hv.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+hv.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+# vectors dot mapreduce parameter
+vd.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+vd.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+# compute director mapreduce parameter
+cd.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+cd.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000
+
+#evaluate mapreduce parameter
+evaluate.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+evaluate.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000

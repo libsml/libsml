@@ -13,6 +13,7 @@ import com.github.libsml.function.imp.SingleLogisticRegressionEvaluator;
 import com.github.libsml.function.imp.SingleLogisticRegressionLoss;
 import com.github.libsml.function.imp.mr.MRLogisticRegression;
 import com.github.libsml.function.imp.mr.MRLogisticRegressionEvaluator;
+import com.github.libsml.function.imp.spark.SparkBinaryClassifyEvaluator;
 import com.github.libsml.function.imp.spark.SparkLogisticRegression;
 import com.github.libsml.model.Models;
 import com.google.common.base.Preconditions;
@@ -39,11 +40,17 @@ public class MLContext {
     public static final String LOCAL_AVRO = "local_avro";
     public static final String HDFS_TEXT = "hdfs_text";
     public static final String HDFS_AVRO = "hdfs_avro";
-    public static final String AVRO = "avro";
-    public static final String TEXT = "text";
     public static final String HADOOP = "hadoop";
     public static final String LIBSVM = "libSVM";
+    public static final String AVRO = "avro";
 
+
+    public static final String SPARK_HADOOP = "spark.hadoop";
+
+
+    public static final String DATA_PARTITIONS = "data.partitions";
+    public static final String TEST_PARTITIONS = "test.partitions";
+    public static final int DATA_PARTITIONS_DEFAULT = 1;
 
     public static final String DATA_FEATURE_NUMBER = "data.feature.number";
     public static final int DATA_FEATURE_NUMBER_DEFAULT = -1;
@@ -70,7 +77,7 @@ public class MLContext {
     public static final String OUTPUT_ITERATION_SAVE = "output.iteration.save";
     public static final boolean OUTPUT_ITERATION_SAVE_DEFAULT = false;
     public static final String OUTPUT_ITERATION_MODE = "output.iteration.mode";
-    public static final String OUTPUT_ITERATION_MODE_DEFAULT = AVRO;
+    public static final String OUTPUT_ITERATION_MODE_DEFAULT = LOCAL_AVRO;
     public static final String LOG_FILE = "log.file";
     public static final String OUTPUT_FORCE_OVERWRITE = "output.force.overwrite";
     public static final String MEMORY_LESS = "memory.less";
@@ -88,16 +95,19 @@ public class MLContext {
     private SparkContext sparkContext;
     private Map<String, Configuration> hadoopConfs;
     private RDD<DataPoint> inputDataRDD;
+    private RDD<DataPoint> testDataRDD;
+    private final String name;
 
-    public MLContext(String confPath) {
+    public MLContext(String confPath, String name) {
         this.conf = Config.createFromFile(confPath);
+        this.name = name;
     }
 
 
     public MLContext init() {
         initOtherContext();
         checkArgument();
-        com.github.libsml.Logger.initLogger(LOG_FILE);
+        com.github.libsml.Logger.initLogger(conf.get(LOG_FILE));
         outputPath();
         return this;
     }
@@ -105,7 +115,14 @@ public class MLContext {
     public void destroy() {
 
         if (inputDataRDD != null) {
-            //TODO:
+            inputDataRDD.unpersist(true);
+        }
+
+        if (testDataRDD != null) {
+            testDataRDD.unpersist(true);
+        }
+        if (sparkContext != null) {
+            sparkContext.stop();
         }
     }
 
@@ -131,7 +148,17 @@ public class MLContext {
     private SparkContext initSparkContext() {
         Preconditions.checkState(sparkContext == null, "Spark context exception:spark context has inited!");
         sparkContext = new SparkContext();
-        //TODO:
+        addHadoopConfig(sparkContext.hadoopConfiguration(), SPARK_HADOOP);
+        inputDataRDD = DataPoint.loadAvroDataGeneric(sparkContext, getInputPaths(), conf.getInt(DATA_PARTITIONS,
+                Math.max(SparkLogisticRegression.getExecutorNum(sparkContext) / 2, 1)));
+
+        if (getTestPath() != null) {
+            testDataRDD = DataPoint.loadAvroDataGeneric(sparkContext, getInputPaths(), conf.getInt(TEST_PARTITIONS,
+                    Math.max(SparkLogisticRegression.getExecutorNum(sparkContext) / 2, 1)));
+            testDataRDD.persist();
+        }
+
+        inputDataRDD.persist();
         return sparkContext;
     }
 
@@ -154,7 +181,7 @@ public class MLContext {
         addHadoopConfigAll(HADOOP);
 
         for (Map.Entry<String, Configuration> entry : hadoopConfs.entrySet()) {
-            entry.getValue().set("mapreduce.job.name", entry.getKey());
+            entry.getValue().set("mapreduce.job.name", name + "_" + entry.getKey());
         }
     }
 
@@ -164,7 +191,7 @@ public class MLContext {
             hadoopConf = new Configuration();
             hadoopConfs.put(name, hadoopConf);
         }
-        hadoopConf.set("mapreduce.job.name", name);
+        hadoopConf.set("mapreduce.job.name", this.name + "_" + name);
         addHadoopConfig(hadoopConf, HADOOP);
         return hadoopConf;
     }
@@ -235,6 +262,13 @@ public class MLContext {
     public String getOutputPath() {
         return conf.get(OUTPUT_PATH);
     }
+
+    public String getOutputPath(String subPath) {
+        String rootPath = getOutputPath();
+        rootPath = rootPath.endsWith("/") ? rootPath : rootPath + "/";
+        return rootPath + subPath;
+    }
+
 
     public String getTestPath() {
         return conf.get(TEST_PATH);
@@ -308,8 +342,8 @@ public class MLContext {
                     test = conf.contains(TEST_PATH) ? new MRLogisticRegressionEvaluator(this) : null;
                     break;
                 case SPARK:
-                    //TODO:
-                    test=null;
+                    test = conf.contains(TEST_PATH) ? new SparkBinaryClassifyEvaluator(
+                            conf.getFloat(TEST_THRESHOLD, TEST_THRESHOLD_DEFAULT), testDataRDD, getBias()) : null;
                     break;
                 default:
                     throw new IllegalStateException("Configuration exception: mode=" + mode);
@@ -346,7 +380,7 @@ public class MLContext {
         return loss;
     }
 
-    public  ProgressFunction getProgressFunction() {
+    public ProgressFunction getProgressFunction() {
         return new Progress(this);
     }
 
@@ -365,7 +399,7 @@ public class MLContext {
 
         int fn = conf.getInt(DATA_FEATURE_NUMBER, DATA_FEATURE_NUMBER_DEFAULT);
         Preconditions.checkArgument(fn > 0
-                , "Configuration check exception:%s=%d is less than 0.", DATA_FEATURE_NUMBER, fn);
+                , "Configuration check exception:%s=%s is less than 0.", DATA_FEATURE_NUMBER, fn + "");
 
         Mode mode = getMode();
         Preconditions.checkArgument(mode != null
@@ -374,7 +408,7 @@ public class MLContext {
     }
 
     public static void main(String[] args) {
-        MLContext ctx = new MLContext("src/conf/conf");
+        MLContext ctx = new MLContext("src/conf/conf", "test");
         ctx.init();
         System.out.println("data.bias:" + ctx.getBias());
         System.out.println("input.paths:" + ctx.getInputPaths());

@@ -38,6 +38,7 @@ public class VecsDotCombiner
                 indexSums.adjustOrPutValue(index,tmp,tmp);
 //                sum += v.get();
             }
+            return;
         }
 
         for (FloatWritable v : values) {

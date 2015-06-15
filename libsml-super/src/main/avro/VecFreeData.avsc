@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "VecFreeData",
-  "namespace": "com.sohu.mllib.data.avro",
+  "namespace": "com.github.libsml.data.avro",
   "fields": [
     {
       "name": "index",

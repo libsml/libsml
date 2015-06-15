@@ -5,6 +5,7 @@ import com.github.libsml.function.EvaluatorFunction;
 import com.github.libsml.function.LossFunction;
 import com.github.libsml.function.ProgressFunction;
 import com.github.libsml.lbfgs.function.VecFreeFunction;
+import com.github.libsml.model.Statistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -233,7 +234,7 @@ public class LBFGS {
             gnorm = param.orthantwiseC == 0 ? VecUtils.vec2norm(g) : VecUtils.vec2norm(gp);
 
             if (progress != null) {
-                EvaluatorFunction.Statistics statistics=test==null?null:test.evaluate(x, k);
+                Statistics statistics=test==null?null:test.evaluate(x, k);
 //                EvaluatorFunction.Statistics statistics=null;
                 if (progress.progress(x, g, fx[0], xnorm, gnorm, step[0], n, k,
                         ls,statistics) != 0) {

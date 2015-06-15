@@ -8,9 +8,9 @@ public class StaticParameter {
     //第一类hadoop任务
     public static final String HADOOP_PREFIX1 = Config.prefixN(HADOOP_PREFIX, 1);
     //第二类hadoop任务
-    public static final String HADOOP_PREFIX2 = Config.prefixN(HADOOP_PREFIX, 2);
+    public static final String HADOOP_PREFIX2 = "vd.hadoop";
     //第三类hadoop任务
-    public static final String HADOOP_PREFIX3 = Config.prefixN(HADOOP_PREFIX, 3);
+    public static final String HADOOP_PREFIX3 = "cd.hadoop";
 
     public static final String HADOOP_PREFIX4 = Config.prefixN(HADOOP_PREFIX, 4);
 

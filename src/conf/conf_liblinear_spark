@@ -1,0 +1,27 @@
+log.file=liblinear.r
+mode=spark
+data.feature.number=240
+data.bias=1
+#model.prior.path
+#model.prior.mode=hdfs_avro
+optimization.l2.c=1
+#input.paths
+#output.path
+#test.paths
+output.iteration.save=false
+output.iteration.mode=local_avro
+output.force.overwrite=true
+memory.less=false
+#data.format=avro
+test.threshold=0.5
+
+optimization.max_iterations=300
+
+#liblinear parameter
+optimization.liblinear.epsilon=1.5e-5
+
+#spark hadoop set
+spark.hadoop.mapreduce.job.user.classpath.first=true
+spark.hadoop.mapreduce.job.reduces=10
+spark.hadoop.mapreduce.input.fileinputformat.split.minsize=1
+spark.hadoop.mapreduce.input.fileinputformat.split.maxsize=150000

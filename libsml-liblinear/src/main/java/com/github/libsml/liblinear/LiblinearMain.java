@@ -32,7 +32,7 @@ public class LiblinearMain {
 
         CommandUtils.checkArgument(args != null && args.length > 0, Commands.helpString());
 
-        MLContext ctx = new MLContext(args[0]).init();
+        MLContext ctx = new MLContext(args[0],"liblinear").init();
 
         Tron tron = new Tron(ctx.getLossFunction()
                 , ctx.getProgressFunction()

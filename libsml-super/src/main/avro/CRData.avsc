@@ -1,7 +1,7 @@
 {
   "type": "record",
   "name": "CRData",
-  "namespace": "com.sohu.mllib.data.avro",
+  "namespace": "com.github.libsml.data.avro",
   "fields": [
     {
       "name": "y",
