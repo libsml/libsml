@@ -1,4 +1,4 @@
-Scalable Machine Learning Library.
+Large Scale Machine Learning Library.
 ==================================
   A scalable machine learning library, including distributed L-BFGS, distributed liblinear, etc.
 
