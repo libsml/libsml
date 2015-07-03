@@ -15,5 +15,6 @@ This is useful when the feature number is large.
 * Run "mvn package"
 
 3.Reference
+-----------------------------------
 * Chen W, Wang Z, Zhou J. Large-scale L-BFGS using MapReduce[C] Advances in Neural Information Processing Systems. 2014: 1332-1340
 * Andrew G, Gao J. Scalable training of L 1-regularized log-linear models[C] Proceedings of the 24th international conference on Machine learning. ACM, 2007: 33-40
