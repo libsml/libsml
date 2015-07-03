@@ -1,6 +1,6 @@
 package com.github.libsml.function.imp.mr;
 
-import com.github.libsml.Job.AbstractJob;
+import com.github.libsml.job.AbstractJob;
 import com.github.libsml.MLContext;
 import com.github.libsml.StaticParameter;
 import com.github.libsml.data.avro.CRData;

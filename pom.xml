@@ -16,6 +16,7 @@
         <module>libsml-liblinear</module>
         <module>libsml-lbfgs</module>
         <module>libsml-driver</module>
+        <module>libsml-feature-engineering</module>
     </modules>
 
     <licenses>
@@ -59,6 +60,11 @@
             </dependency>
             <dependency>
                 <artifactId>libsml-driver</artifactId>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <artifactId>libsml-feture-engineering</artifactId>
                 <groupId>${project.groupId}</groupId>
                 <version>${project.version}</version>
             </dependency>
@@ -141,6 +147,11 @@
                 <groupId>org.jblas</groupId>
                 <artifactId>jblas</artifactId>
                 <version>1.2.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>3.2</version>
             </dependency>
         </dependencies>
 

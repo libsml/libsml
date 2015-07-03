@@ -52,6 +52,9 @@ public class MLContext {
     public static final String TEST_PARTITIONS = "test.partitions";
     public static final int DATA_PARTITIONS_DEFAULT = 1;
 
+    public static final String REDUCE_SUM_NUMBER = "reduce.sum.number";
+    public static final int REDUCE_SUM_NUMBER_DEFAULT = -1;
+
     public static final String DATA_FEATURE_NUMBER = "data.feature.number";
     public static final int DATA_FEATURE_NUMBER_DEFAULT = -1;
     public static final String DATA_BIAS = "data.bias";
@@ -368,7 +371,10 @@ public class MLContext {
                     loss = new MRLogisticRegression(this);
                     break;
                 case SPARK:
-                    loss = new SparkLogisticRegression(this);
+                    loss = new SparkLogisticRegression(getInputDataRDD(),
+                            getBias(), getL2C(), isLessMemory(), isSaveIterationResult(),
+                            getSaveIterationResultMode(), getOutputPath(),
+                            conf.getInt(REDUCE_SUM_NUMBER, REDUCE_SUM_NUMBER_DEFAULT));
                     break;
                 default:
                     throw new IllegalStateException("Configuration exception: mode=" + mode);
