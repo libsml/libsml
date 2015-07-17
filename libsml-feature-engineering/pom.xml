@@ -9,8 +9,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>libsml-feture-engineering</artifactId>
-    <name>libsml-feture-engineering</name>
+    <artifactId>libsml-feature-engineering</artifactId>
+    <name>libsml-feature-engineering</name>
     <packaging>jar</packaging>
 
 
