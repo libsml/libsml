@@ -16,6 +16,7 @@
         <module>libsml-liblinear</module>
         <module>libsml-lbfgs</module>
         <module>libsml-driver</module>
+        <module>libsml-math</module>
         <module>libsml-feature-engineering</module>
     </modules>
 
@@ -60,6 +61,11 @@
             </dependency>
             <dependency>
                 <artifactId>libsml-driver</artifactId>
+                <groupId>${project.groupId}</groupId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <artifactId>libsml-math</artifactId>
                 <groupId>${project.groupId}</groupId>
                 <version>${project.version}</version>
             </dependency>
