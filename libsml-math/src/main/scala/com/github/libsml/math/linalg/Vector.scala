@@ -1,8 +1,11 @@
 package com.github.libsml.math.linalg
 
+import java.io.PrintWriter
 import java.util
 
 import com.github.libsml.math.util.{HashFunctions, PrimeFinder}
+
+import scala.util.Random
 
 
 /**
@@ -12,11 +15,14 @@ import com.github.libsml.math.util.{HashFunctions, PrimeFinder}
  */
 trait Vector extends Serializable {
 
-  def activeSize: Int
+  def noZeroSize: Int
 
   def size: Int
 
   def update(i: Int, v: Double): Unit
+
+  def update(i: Int, f: Double => Double): Unit
+
 
   /**
    * Gets the value of the ith element.
@@ -24,24 +30,17 @@ trait Vector extends Serializable {
    */
   def apply(i: Int): Double
 
-  def foreachActive(f: (Int, Double) => Unit): Unit
+  def foreachNoZero(f: (Int, Double) => Unit): Unit
 
   override def equals(other: Any): Boolean = {
     other match {
       case v2: Vector => {
-        this.foreachActive { case (index, value) =>
-          // ignore explict 0 for comparison between sparse and dense
+        if (this.noZeroSize != v2.noZeroSize) {
+          return false
+        }
+        this.foreachNoZero { case (index, value) =>
           try {
             if (v2(index) != value) return false
-          } catch {
-            case e: Throwable => return false;
-          }
-        }
-
-        v2.foreachActive { case (index, value) =>
-          // ignore explict 0 for comparison between sparse and dense
-          try {
-            if (this(index) != value) return false
           } catch {
             case e: Throwable => return false;
           }
@@ -55,16 +54,28 @@ trait Vector extends Serializable {
 
   override def hashCode(): Int = {
     var result: Int = size + 31
-    this.foreachActive { case (index, value) =>
-      // ignore explict 0 for comparison between sparse and dense
-      if (value != 0) {
-        result = 31 * result + index
-        // refer to {@link java.util.Arrays.equals} for hash algorithm
-        val bits = java.lang.Double.doubleToLongBits(value)
-        result = 31 * result + (bits ^ (bits >>> 32)).toInt
-      }
+    this.foreachNoZero { case (index, value) =>
+      result = 31 * result + index
+      // refer to {@link java.util.Arrays.equals} for hash algorithm
+      val bits = java.lang.Double.doubleToLongBits(value)
+      result = 31 * result + (bits ^ (bits >>> 32)).toInt
     }
     result
+  }
+
+  override def toString(): String = {
+    val buf: StringBuilder = new StringBuilder()
+    var count = 0
+    buf.append('[')
+    foreachNoZero((i, v) => {
+      if (count != 0) {
+        buf.append(',')
+      }
+      buf.append(i + "->" + v)
+      count += 1
+    })
+    buf.append(']')
+    buf.toString()
   }
 }
 
@@ -74,11 +85,11 @@ class DenseVector(val values: Array[Double]) extends Vector {
 
   override val size: Int = values.length
 
-  override val activeSize: Int = {
-    values.length
+  override val noZeroSize: Int = {
+    values.count(_ != 0)
   }
 
-  override def toString: String = values.mkString("[", ",", "]")
+  //  override def toString: String = values.mkString("[", ",", "]")
 
 
   override def equals(other: Any): Boolean = {
@@ -91,13 +102,15 @@ class DenseVector(val values: Array[Double]) extends Vector {
 
   override def hashCode(): Int = super.hashCode()
 
-  override def foreachActive(f: (Int, Double) => Unit) = {
+  override def foreachNoZero(f: (Int, Double) => Unit) = {
     var i = 0
     val localValuesSize = values.size
     val localValues = values
 
     while (i < localValuesSize) {
-      f(i, localValues(i))
+      if (localValues(i) != 0) {
+        f(i, localValues(i))
+      }
       i += 1
     }
   }
@@ -107,25 +120,32 @@ class DenseVector(val values: Array[Double]) extends Vector {
     values(i) = v
   }
 
+  override def update(i: Int, f: (Double) => Double): Unit = {
+    if (i < 0 || i >= size) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
+    values(i) = f(values(i))
+  }
+
   override def apply(i: Int): Double = {
     if (i < 0 || i >= size) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     values(i)
   }
+
+
 }
 
-class SparseVector(var indices: Array[Int], var values: Array[Double], override val size: Int = Int.MaxValue)
+class SparseVector(var indices: Array[Int], var values: Array[Double])
   extends Vector {
+
 
   require(indices != null, "SparkVector exception:indices is null.")
   require(values != null, "SparkVector exception:values is null.")
   require(indices.length == values.length, "SparkVector exception:indices length=%d should equal values length=%d"
     .format(indices.length, values.length))
-  require(indices.length <= size, "SparkVector exception:indices and values length=%d should less than size=%d"
-    .format(indices.length, size))
 
+  override val size: Int = Int.MaxValue
   var used = indices.length
 
-  override def activeSize: Int = used
+  override def noZeroSize: Int = values.count(_ != 0)
 
 
   private var lastReturnedPos = -1
@@ -226,6 +246,7 @@ class SparseVector(var indices: Array[Int], var values: Array[Double], override 
   }
 
   override def apply(i: Int): Double = {
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     val offset = findOffset(i)
     if (offset >= 0) values(offset) else 0
   }
@@ -245,7 +266,19 @@ class SparseVector(var indices: Array[Int], var values: Array[Double], override 
    * new arrays.
    */
   override def update(i: Int, v: Double): Unit = {
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     val offset = findOffset(i)
+    updateWithOffset(i, offset, v)
+  }
+
+  override def update(i: Int, f: (Double) => Double): Unit = {
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
+    val offset = findOffset(i)
+    updateWithOffset(i, offset, if (offset >= 0) f(values(offset)) else f(0))
+  }
+
+  private def updateWithOffset(i: Int, offset: Int, v: Double): Unit = {
+
     if (offset >= 0) {
       // found at offset
       values(offset) = v
@@ -255,45 +288,7 @@ class SparseVector(var indices: Array[Int], var values: Array[Double], override 
       used += 1
       if (used > values.length) {
 
-        // need to grow array
-        var newLength = {
-          if (values.length == 0) {
-            4
-          }
-          else if (values.length < 0x0400) {
-            values.length * 2
-          }
-          else if (values.length < 0x0800) {
-            values.length + 0x0400
-          }
-          else if (values.length < 0x1000) {
-            values.length + 0x0800
-          }
-          else if (values.length < 0x2000) {
-            values.length + 0x1000
-          }
-          else if (values.length < 0x4000) {
-            values.length + 0x2000
-          }
-          else {
-            values.length + 0x4000
-          }
-        }
-        if (newLength > size) {
-          newLength = size
-        }
-
-        // allocate new arrays
-        val newIndex = util.Arrays.copyOf(indices, newLength)
-        val newData = util.Arrays.copyOf(values, newLength)
-
-        // copy existing data into new arrays
-        System.arraycopy(indices, insertPos, newIndex, insertPos + 1, used - insertPos - 1)
-        System.arraycopy(values, insertPos, newData, insertPos + 1, used - insertPos - 1)
-
-        // update pointers
-        indices = newIndex
-        values = newData
+        grow(insertPos)
       } else if (used - insertPos > 1) {
         // need to make room for new element mid-array
         System.arraycopy(indices, insertPos, indices, insertPos + 1, used - insertPos - 1)
@@ -307,20 +302,22 @@ class SparseVector(var indices: Array[Int], var values: Array[Double], override 
     }
   }
 
-  override def foreachActive(f: (Int, Double) => Unit): Unit = {
+  override def foreachNoZero(f: (Int, Double) => Unit): Unit = {
     var i = 0
     val localValuesSize = values.size
     val localIndices = indices
     val localValues = values
 
     while (i < localValuesSize) {
-      f(localIndices(i), localValues(i))
+      if (localValues(i) != 0) {
+        f(localIndices(i), localValues(i))
+      }
       i += 1
     }
   }
 
-  override def toString: String =
-    "(%s,%s,%s)".format(size, indices.mkString("[", ",", "]"), values.mkString("[", ",", "]"))
+  //  override def toString: String =
+  //    "(%s,%s,%s)".format(size, indices.mkString("[", ",", "]"), values.mkString("[", ",", "]"))
 
 
   override def equals(other: Any): Boolean = {
@@ -336,15 +333,60 @@ class SparseVector(var indices: Array[Int], var values: Array[Double], override 
 
 
   override def hashCode(): Int = super.hashCode()
+
+  private def grow(insertPos: Int): Unit = {
+
+    var newLength = {
+      if (values.length == 0) {
+        4
+      }
+      else if (values.length < 0x0400) {
+        values.length * 2
+      }
+      else if (values.length < 0x0800) {
+        values.length + 0x0400
+      }
+      else if (values.length < 0x1000) {
+        values.length + 0x0800
+      }
+      else if (values.length < 0x2000) {
+        values.length + 0x1000
+      }
+      else if (values.length < 0x4000) {
+        values.length + 0x2000
+      }
+      else {
+        values.length + 0x4000
+      }
+    }
+    if (newLength > size) {
+      newLength = size
+    }
+
+    // allocate new arrays
+    val newIndex = util.Arrays.copyOf(indices, newLength)
+    val newData = util.Arrays.copyOf(values, newLength)
+
+    // copy existing data into new arrays
+    System.arraycopy(indices, insertPos, newIndex, insertPos + 1, used - insertPos - 1)
+    System.arraycopy(values, insertPos, newData, insertPos + 1, used - insertPos - 1)
+
+    // update pointers
+    indices = newIndex
+    values = newData
+  }
+
+
 }
 
 
-class MapVector(private[this] var capacity: Int,
+class MapVector(initCapacity: Int,
                 private[this] var minLoadFactor: Double,
                 private[this] var maxLoadFactor: Double) extends Vector {
-  checkArguments()
+  checkArguments(initCapacity, minLoadFactor, maxLoadFactor)
 
-  capacity = PrimeFinder.nextPrime(capacity)
+  //for test
+  var capacity = PrimeFinder.nextPrime(initCapacity)
 
   //  if (capacity == 0) {
   //    capacity = 1
@@ -352,23 +394,73 @@ class MapVector(private[this] var capacity: Int,
 
   private[libsml] var table: Array[Int] = Array.fill(capacity)(-1)
   private[libsml] var values: Array[Double] = Array.fill(capacity)(0)
+  private[this] var distinct = 0
+  private[this] var freeEntries = table.length
 
   maxLoadFactor = if (PrimeFinder.LARGEST_PRIME == capacity) 1.0 else maxLoadFactor
-  override var size = 0
+
+  override val size = Int.MaxValue
+
   private var lowWaterMark = 0
   private var highWaterMark = chooseHighWaterMark(capacity, this.maxLoadFactor)
 
 
-  override def activeSize: Int = ???
+  override def noZeroSize: Int = distinct
 
   override def update(i: Int, v: Double): Unit = {
-    var j = indexOfInsertion(i)
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
+    val pos = indexOfInsertion(i)
+
+    updateWithInsertion(i, pos, v)
+  }
+
+  override def update(i: Int, f: (Double) => Double): Unit = {
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
+    val pos = indexOfInsertion(i)
+    updateWithInsertion(i, pos, if (pos < 0) f(values(-pos - 1)) else f(0))
+  }
+
+  private[this] def updateWithInsertion(i: Int, pos: Int, v: Double): Unit = {
+
+    var j = pos
     if (j < 0) {
+      //already contained
       j = -j - 1
+      if (v == 0 && values(j) != 0) {
+        distinct -= 1
+      }
       values(j) = v
+      if (this.distinct < this.lowWaterMark) {
+        val newCapacity: Int = chooseShrinkCapacity(this.distinct, this.minLoadFactor, this.maxLoadFactor)
+        rehash(newCapacity)
+      }
       return
     }
 
+    if (v == 0) {
+      return
+    }
+
+    if (this.distinct > this.highWaterMark) {
+      val newCapacity: Int = chooseGrowCapacity(this.distinct + 1, this.minLoadFactor, this.maxLoadFactor)
+      rehash(newCapacity)
+      updateWithInsertion(i, indexOfInsertion(i), v)
+      return
+    }
+
+    if (table(j) == -1) {
+      freeEntries -= 1
+    }
+    table(j) = i
+    values(j) = v
+    if (v != 0) {
+      distinct += 1
+    }
+
+    if (this.freeEntries < 1) {
+      val newCapacity: Int = chooseGrowCapacity(this.distinct + 1, this.minLoadFactor, this.maxLoadFactor)
+      rehash(newCapacity)
+    }
   }
 
   /**
@@ -376,6 +468,7 @@ class MapVector(private[this] var capacity: Int,
    * @param i index
    */
   override def apply(i: Int): Double = {
+    if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     val j: Int = indexOfKey(i)
     if (j < 0) {
       0
@@ -384,7 +477,15 @@ class MapVector(private[this] var capacity: Int,
     }
   }
 
-  override def foreachActive(f: (Int, Double) => Unit): Unit = ???
+  override def foreachNoZero(f: (Int, Double) => Unit): Unit = {
+    var j = 0
+    while (j < table.length) {
+      if (values(j) != 0) {
+        f(table(j), values(j))
+      }
+      j += 1
+    }
+  }
 
   /**
    * @param key the key to be added to the receiver.
@@ -402,14 +503,18 @@ class MapVector(private[this] var capacity: Int,
     if (decrement == 0) {
       decrement = 1
     }
+
+
     // stop if we find a removed or free slot, or if we find the key itself
     // do NOT skip over removed slots (yes, open addressing is like that...)
-    while (values(i) == 0 && table(i) != key) {
+    while (values(i) != 0 && table(i) != key) {
       i -= decrement
       if (i < 0) {
         i += length
       }
+
     }
+
 
     if (values(i) == 0 && table(i) != -1) {
       val j = i
@@ -422,6 +527,7 @@ class MapVector(private[this] var capacity: Int,
       if (table(i) == -1) {
         i = j
       }
+
     }
 
     if (values(i) != 0) {
@@ -445,7 +551,12 @@ class MapVector(private[this] var capacity: Int,
     if (decrement == 0) {
       decrement = 1
     }
+
+
+
     while (table(i) != -1 && table(i) != key) {
+
+
       i -= decrement
       if (i < 0) {
         i += length
@@ -457,6 +568,7 @@ class MapVector(private[this] var capacity: Int,
       i
     }
 
+
   }
 
   private def rehash(newCapacity: Int): Unit = {
@@ -465,18 +577,20 @@ class MapVector(private[this] var capacity: Int,
     val oldTable: Array[Int] = table
     val oldValues: Array[Double] = values
 
-    table = new Array[Int](newCapacity)
+    table = Array.fill(newCapacity)(-1)
     values = new Array[Double](newCapacity)
 
     this.lowWaterMark = chooseLowWaterMark(newCapacity, this.minLoadFactor)
     this.highWaterMark = chooseHighWaterMark(newCapacity, this.maxLoadFactor)
+
+    this.freeEntries = newCapacity - this.distinct
 
 
     //    this.freeEntries = newCapacity - this.distinct
 
     var i = oldCapacity - 1
     while (i >= 0) {
-      if (values(i) != 0) {
+      if (oldValues(i) != 0) {
         val element: Int = oldTable(i)
         val index: Int = indexOfInsertion(element)
         this.table(index) = element
@@ -505,8 +619,23 @@ class MapVector(private[this] var capacity: Int,
     return (capacity * minLoad).toInt
   }
 
+  /**
+   * Chooses a new prime table capacity optimized for shrinking that (approximately) satisfies the invariant <tt>c *
+   * minLoadFactor <= size <= c * maxLoadFactor</tt> and has at least one FREE slot for the given size.
+   */
+  private def chooseShrinkCapacity(size: Int, minLoad: Double, maxLoad: Double): Int = {
+    return PrimeFinder.nextPrime(Math.max(size + 1, ((4 * size / (minLoad + 3 * maxLoad))).toInt))
+  }
 
-  private def checkArguments(): Unit = {
+  /**
+   * Chooses a new prime table capacity optimized for growing that (approximately) satisfies the invariant <tt>c *
+   * minLoadFactor <= size <= c * maxLoadFactor</tt> and has at least one FREE slot for the given size.
+   */
+  private def chooseGrowCapacity(size: Int, minLoad: Double, maxLoad: Double): Int = {
+    return PrimeFinder.nextPrime(Math.max(size + 1, ((4 * size / (3 * minLoad + maxLoad))).toInt))
+  }
+
+  private def checkArguments(capacity: Int, minLoadFactor: Double, maxLoadFactor: Double): Unit = {
     if (capacity < 0) {
       throw new IllegalArgumentException("Initial Capacity must not be less than zero: " + capacity)
     }
@@ -521,19 +650,32 @@ class MapVector(private[this] var capacity: Int,
     }
   }
 
-  private def isFree(i: Int): Boolean = table(i) == -1
-
-  private def isFull(i: Int): Boolean = table(i) != -1 && values(i) != 0
-
-  private def isRemove(i: Int): Boolean = table(i) != -1 && values(i) == 0
-
 }
 
 object Vector {
 
-  def apply(indices: Array[Int], values: Array[Double], size: Int = Int.MaxValue): SparseVector
-  = new SparseVector(indices, values, size)
 
+  val DEFAULT_CAPACITY: Int = 277
+  val DEFAULT_MIN_LOAD_FACTOR: Double = 0.2
+  val DEFAULT_MAX_LOAD_FACTOR: Double = 0.75
+
+  def apply(indices: Array[Int], values: Array[Double]): SparseVector
+  = new SparseVector(indices, values)
+
+  def apply(values: Array[Double]): DenseVector
+  = new DenseVector(values)
+
+  def apply(initialCapacity: Int, minLoadFactor: Double, maxLoadFactor: Double): MapVector = {
+    new MapVector(initialCapacity, minLoadFactor, maxLoadFactor)
+  }
+
+  def apply(initialCapacity: Int): MapVector = {
+    apply(initialCapacity, DEFAULT_MIN_LOAD_FACTOR, DEFAULT_MAX_LOAD_FACTOR)
+  }
+
+  def apply(): MapVector = {
+    apply(DEFAULT_CAPACITY)
+  }
 
   def equals(a: Array[Int], a2: Array[Int], s: Int, s2: Int, lenght: Int): Boolean = {
     if (a eq a2) return true
@@ -566,38 +708,34 @@ object Vector {
 
 object Vectors {
   def main(args: Array[String]): Unit = {
-    //    val v1: Vector = new DenseVector(Array(1, 3, 4, 5))
-    //    val v2: Vector = new DenseVector(Array(1, 3, 4, 5))
-    //    println(v1 == v2)
-    //    println(v1.hashCode())
-    //    println(v2.hashCode())
-    //    v1(1) = 2.3
-    //    println(v1)
-    //    println(v1 == v2)
+    val p = new PrintWriter("tmp")
+    val v1 = Vector(20000000)
+    for (i <- 0 to 300000) {
+      val k = Math.abs(Random.nextInt(300000))
 
-    val v1 = Vector(Array(), Array())
-    val v2 = Vector(Array(), Array())
-    //    println(v1)
-    //    println(v1.activeSize)
-    //    v1(1) = 2.2
-    //    println(v1)
-    //    println(v1.activeSize)
-    //    v1(2) = 2.55
-    //    println(v1)
-    //    println(v1.activeSize)
+      val v = Random.nextInt(300)
+      println(i + ":" + k + ":" + v)
+      v1(k) = v
+      println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
+//      p.println(v1)
+    }
 
-    println(v1 == v2)
-    println(v1.hashCode())
-    println(v2.hashCode())
-    v1(3) = 1.2
-    v2(3) = 1.2
-    println(v1 == v2)
-    println(v1.hashCode())
-    println(v2.hashCode())
-    v2(4) = 1.2
-    println(v1 == v2)
-    println(v1.hashCode())
-    println(v2.hashCode())
+//    for (i <- 0 to 300) {
+//      val k = Math.abs(Random.nextInt(300))
+//
+//      p.println(i + ":" + k + ":" + 0)
+//      v1(k) = 0
+//      p.println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
+//      p.println(v1)
+//    }
+//
+//    p.println(v1(111))
+//    p.println(v1(112))
+//    p.println(v1(113))
+    //    p.println(v1.count)
+    //    p.println(v1.count.toDouble/605)
 
+
+    p.close()
   }
 }
