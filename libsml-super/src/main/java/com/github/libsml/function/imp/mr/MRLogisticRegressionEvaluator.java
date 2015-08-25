@@ -1,6 +1,6 @@
 package com.github.libsml.function.imp.mr;
 
-import com.github.libsml.job.AbstractJob;
+import com.github.libsml.job.AbstractJobs;
 import com.github.libsml.MLContext;
 import com.github.libsml.commons.util.HadoopUtils;
 import com.github.libsml.data.Datas;
@@ -26,7 +26,7 @@ import static com.github.libsml.StaticParameter.*;
 /**
  * Created by yellowhuang on 2015/4/17.
  */
-public class MRLogisticRegressionEvaluator extends AbstractJob implements EvaluatorFunction {
+public class MRLogisticRegressionEvaluator extends AbstractJobs implements EvaluatorFunction {
 
 //    private final Config config;
     public static final String EVALUATE="evaluate";

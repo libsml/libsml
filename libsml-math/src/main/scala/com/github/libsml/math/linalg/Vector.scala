@@ -13,7 +13,7 @@ import scala.util.Random
  *
  * Represents a numeric vector, whose index type is Int and value type is Double.
  */
-trait Vector extends Serializable {
+sealed trait Vector extends Serializable {
 
   def noZeroSize: Int
 
@@ -148,7 +148,7 @@ class SparseVector(var indices: Array[Int], var values: Array[Double])
   override def noZeroSize: Int = values.count(_ != 0)
 
 
-  private var lastReturnedPos = -1
+  private[libsml] var lastReturnedPos = -1
 
   /**
    * Returns the offset into index and data for the requested vector
@@ -222,12 +222,14 @@ class SparseVector(var indices: Array[Int], var values: Array[Double])
           mid = (end + begin) >> 1
 
         while (!found && begin <= end) {
+          //          println("begin:"+begin+" end:"+end+" mid:"+mid)
+          //          println("i:"+i+" ind:"+indices(mid))
           if (i < indices(mid)) {
             end = mid - 1
-            mid = (begin + mid) >> 2
+            mid = (begin + end) >> 1
           } else if (i > indices(mid)) {
             begin = mid + 1
-            mid = (begin + mid) >> 2
+            mid = (begin + end) >> 1
           } else {
             found = true
           }
@@ -274,6 +276,7 @@ class SparseVector(var indices: Array[Int], var values: Array[Double])
   override def update(i: Int, f: (Double) => Double): Unit = {
     if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     val offset = findOffset(i)
+
     updateWithOffset(i, offset, if (offset >= 0) f(values(offset)) else f(0))
   }
 
@@ -287,7 +290,6 @@ class SparseVector(var indices: Array[Int], var values: Array[Double])
       val insertPos = ~offset
       used += 1
       if (used > values.length) {
-
         grow(insertPos)
       } else if (used - insertPos > 1) {
         // need to make room for new element mid-array
@@ -404,6 +406,39 @@ class MapVector(initCapacity: Int,
   private var lowWaterMark = 0
   private var highWaterMark = chooseHighWaterMark(capacity, this.maxLoadFactor)
 
+
+  def clear(): Unit = {
+    util.Arrays.fill(table, -1)
+    util.Arrays.fill(values, 0)
+    freeEntries = table.length
+    distinct = 0
+  }
+
+  /**
+   * Trims the capacity of the receiver to be the receiver's current size. Releases any superfluous internal memory. An
+   * application can use this operation to minimize the storage of the receiver.
+   */
+  def trimToSize() {
+    val newCapacity: Int = PrimeFinder.nextPrime((1 + 1.2 * size).toInt)
+    if (table.length > newCapacity) {
+      rehash(newCapacity)
+    }
+  }
+
+
+  def keys(): Array[Int] = {
+    val keys = new Array[Int](noZeroSize)
+    var index = 0
+    var i = 0
+    while (i < table.length) {
+      if (table(i) != 0) {
+        keys(index) = table(i)
+        index += 1
+      }
+      i += 1
+    }
+    keys
+  }
 
   override def noZeroSize: Int = distinct
 
@@ -709,29 +744,32 @@ object Vector {
 object Vectors {
   def main(args: Array[String]): Unit = {
     val p = new PrintWriter("tmp")
-    val v1 = Vector(20000000)
+    //    val v1 = Vector(20000000)
+    val v1: SparseVector = Vector(Array(), Array())
     for (i <- 0 to 300000) {
       val k = Math.abs(Random.nextInt(300000))
 
       val v = Random.nextInt(300)
       println(i + ":" + k + ":" + v)
       v1(k) = v
-      println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
-//      p.println(v1)
+      println("l:" + v1.indices.length)
+      //      println(v1)
+      //      println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
+      //      p.println(v1)
     }
 
-//    for (i <- 0 to 300) {
-//      val k = Math.abs(Random.nextInt(300))
-//
-//      p.println(i + ":" + k + ":" + 0)
-//      v1(k) = 0
-//      p.println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
-//      p.println(v1)
-//    }
-//
-//    p.println(v1(111))
-//    p.println(v1(112))
-//    p.println(v1(113))
+    //    for (i <- 0 to 300) {
+    //      val k = MLMath.abs(Random.nextInt(300))
+    //
+    //      p.println(i + ":" + k + ":" + 0)
+    //      v1(k) = 0
+    //      p.println("active:" + v1.table.length + "|nozero:" + v1.noZeroSize)
+    //      p.println(v1)
+    //    }
+    //
+    //    p.println(v1(111))
+    //    p.println(v1(112))
+    //    p.println(v1(113))
     //    p.println(v1.count)
     //    p.println(v1.count.toDouble/605)
 

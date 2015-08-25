@@ -69,6 +69,10 @@
             <artifactId>commons</artifactId>
             <groupId>${project.groupId}</groupId>
         </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.github.fommil.netlib</groupId>-->
+            <!--<artifactId>all</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>

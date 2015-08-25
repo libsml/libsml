@@ -40,12 +40,12 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.github.libsml.feature.engineering.smooth.MRBeyesianSmooth</mainClass>
-                        </manifest>
-                    </archive>
+                    <!--<archive>-->
+                        <!--<manifest>-->
+                            <!--<addClasspath>true</addClasspath>-->
+                            <!--<mainClass>com.github.libsml.feature.engineering.smooth.MRBeyesianSmooth</mainClass>-->
+                        <!--</manifest>-->
+                    <!--</archive>-->
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
@@ -66,6 +66,14 @@
     <dependencies>
         <dependency>
             <artifactId>commons</artifactId>
+            <groupId>${project.groupId}</groupId>
+        </dependency>
+        <dependency>
+            <artifactId>libsml-math</artifactId>
+            <groupId>${project.groupId}</groupId>
+        </dependency>
+        <dependency>
+            <artifactId>libsml-optimization</artifactId>
             <groupId>${project.groupId}</groupId>
         </dependency>
         <dependency>

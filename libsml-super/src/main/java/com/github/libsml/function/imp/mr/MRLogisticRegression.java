@@ -1,6 +1,6 @@
 package com.github.libsml.function.imp.mr;
 
-import com.github.libsml.job.AbstractJob;
+import com.github.libsml.job.AbstractJobs;
 import com.github.libsml.MLContext;
 import com.github.libsml.StaticParameter;
 import com.github.libsml.data.avro.CRData;
@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class MRLogisticRegression extends AbstractJob implements LossFunction {
+public class MRLogisticRegression extends AbstractJobs implements LossFunction {
 
 
     public static final String HV_SUB_PATH = "hv";

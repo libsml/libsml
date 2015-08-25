@@ -177,6 +177,8 @@ public class Tron {
         rTr = vecdot(r, r);
 
         while (true) {
+
+
             if (euclideanNorm(r) <= cgtol) break;
             cg_iter++;
             loss.Hv(w, d, Hd, iter, cg_iter);
