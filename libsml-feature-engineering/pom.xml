@@ -77,6 +77,10 @@
             <groupId>${project.groupId}</groupId>
         </dependency>
         <dependency>
+            <artifactId>libsml-model</artifactId>
+            <groupId>${project.groupId}</groupId>
+        </dependency>
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>

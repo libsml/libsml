@@ -1,15 +1,22 @@
 package com.github.libsml.feature.engineering.smooth
 
-import com.github.libsml.math.linalg.Vector
+import com.github.libsml.math.linalg.{BLAS, Vector}
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.util.Gamma._
+import com.github.libsml.math.util.VectorUtils
 
 /**
  * Created by huangyu on 15/8/23.
  */
-class BayesianSmoothFunction(val clicks: Array[Double], val impressions: Array[Double]) extends Function {
+class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends Function {
 
+  val impressions: Vector = VectorUtils.newVectorAs(clicks)
+  BLAS.copy(unClicks, impressions)
+  BLAS.axpy(1, clicks, impressions)
   checkArguments()
+
+  //  private[this] var diGammaClick: Array[Double] = _
+  //  private[this] var diGammaImpression: Array[Double] = _
 
   override def isDerivable: Boolean = true
 
@@ -21,22 +28,40 @@ class BayesianSmoothFunction(val clicks: Array[Double], val impressions: Array[D
     val alphaBeta = alpha + beta
     var f: Double = 0
     var i = 0
+    val logGammaAlphaBeta = logGamma(alphaBeta)
+    val logGammaAlpha = logGamma(alpha)
+    val logGammaBeta = logGamma(beta)
 
-    var tmp = 0
-    while (i < clicks.length) {
-      tmp += logGamma(alphaBeta) + logGamma(clicks(i) + alpha) + logGamma(impressions(i) - clicks(i) + beta) -
-        logGamma(alpha) - logGamma(beta) - logGamma(impressions(i) + alphaBeta)
-      f += tmp
-      i += 1
-    }
+    clicks.foreachNoZero((i, v) => {
+      f += logGamma(v + alpha) - logGammaAlpha
+    })
 
-    var dAlpha = 0
-    var dBeta = 0
-    i = 0
-    while (i < clicks.length) {
-      dAlpha += digamma(alphaBeta) + digamma(clicks(i) + alpha) - digamma(alpha) - digamma(impressions(i) + alphaBeta)
-      dBeta += digamma(alphaBeta) + digamma(impressions(i) - clicks(i) + beta) - digamma(beta) - digamma(impressions(i) + alphaBeta)
-    }
+    unClicks.foreachNoZero((i, v) => {
+      f += logGamma(v + beta) - logGammaBeta
+    })
+
+    impressions.foreachNoZero((i, v) => {
+      f += logGamma(v + alphaBeta) - logGammaAlphaBeta
+    })
+
+    var dAlpha: Double = 0
+    var dBeta: Double = 0
+    val diGammaAlphaBeta = diGamma(alphaBeta)
+    val diGammaAlpha = diGamma(alpha)
+    val diGammaBeta = diGamma(beta)
+
+    clicks.foreachNoZero((i, v) => {
+      dAlpha += diGamma(v + alpha) - diGammaAlpha
+    })
+    unClicks.foreachNoZero((i, v) => {
+      dBeta += diGamma(v + beta) - diGammaBeta
+    })
+    impressions.foreachNoZero((i, v) => {
+      val tmp = diGamma(v + alphaBeta) - diGammaAlphaBeta
+      dAlpha -= tmp
+      dBeta -= tmp
+    })
+
     g(0) = -dAlpha
     g(1) = -dBeta
     -f
@@ -53,15 +78,57 @@ class BayesianSmoothFunction(val clicks: Array[Double], val impressions: Array[D
   override def isSecondDerivable: Boolean = true
 
   private[this] def checkArguments(): Unit = {
-    require(clicks != null && impressions != null && clicks.length == impressions.length, "Bayesian smooth function exception!")
-    var i = 0
-    while (i < clicks.length) {
-      require(clicks(i) >= 0 && impressions(i) >= 0 && clicks(i) <= impressions(i), "Bayesian smooth function exception!")
-      i += 1
-    }
+
+    require(clicks != null && unClicks != null, "Bayesian smooth function exception!")
+    clicks.foreachNoZero((i, v) => {
+      require(v >= 0, "Bayesian smooth function exception!")
+    })
+
+    unClicks.foreachNoZero((i, v) => {
+      require(v >= 0, "Bayesian smooth function exception!")
+    })
   }
 
   override def invertHessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+    if (setZero) {
+      BLAS.zero(hv)
+    }
 
+    var b: Double = 0
+    var qAlpha: Double = 0.0
+    var qBeta: Double = 0.0
+    var z: Double = 0
+    val alphaBeta = w(0) + w(1)
+
+    var i = 0
+
+    var tmp = triGamma(w(0))
+    clicks.foreachNoZero((i, v) => {
+      qAlpha += triGamma(v + w(0)) - tmp
+    })
+
+
+    tmp = triGamma(w(1))
+    unClicks.foreachNoZero((i, v) => {
+      qBeta += triGamma(v + w(1)) - tmp
+    })
+
+    tmp = triGamma(alphaBeta)
+    impressions.foreachNoZero((i, v) => {
+      z += tmp - triGamma(v + alphaBeta)
+    })
+
+    b = (d(0) / qAlpha + d(1) / qBeta) / (1 / z + 1 / qAlpha + 1 / qBeta)
+
+    d.foreachNoZero((k, v) => {
+      hv(k) = _ + (d(k) - b) / (if (k == 0) qAlpha else qBeta)
+    })
+
+    hv(0) = -hv(0)
+    hv(1) = -hv(1)
+  }
+
+  override def isInBound(w: Vector): Boolean = {
+    w(0) > 0 && w(1) > 0
   }
 }

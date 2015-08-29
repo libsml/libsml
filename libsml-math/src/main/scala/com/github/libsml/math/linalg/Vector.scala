@@ -85,7 +85,7 @@ class DenseVector(val values: Array[Double]) extends Vector {
 
   override val size: Int = values.length
 
-  override val noZeroSize: Int = {
+  override def noZeroSize: Int = {
     values.count(_ != 0)
   }
 
@@ -445,7 +445,6 @@ class MapVector(initCapacity: Int,
   override def update(i: Int, v: Double): Unit = {
     if (i < 0) throw new IndexOutOfBoundsException(i + " not in [0," + size + ")")
     val pos = indexOfInsertion(i)
-
     updateWithInsertion(i, pos, v)
   }
 

@@ -100,8 +100,8 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     if (iter == 0) {
       fun = function.gradient(_weight, g)
       delta = BLAS.euclideanNorm(g)
-      gnorm1 = delta;
-      gnorm = gnorm1;
+      gnorm1 = delta
+      gnorm = gnorm1
 
       if (gnorm <= parameter.epsilon * gnorm1) isStop = true
 
@@ -119,7 +119,9 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
       gs = dot(g, s)
       prered = -0.5f * (gs - dot(s, r))
 
+//      println("wnew:"+w_new)
       fnew = function.gradient(w_new, g_new)
+//      println("wgnew:"+g_new)
 
       // Compute the actual reduction.
       actred = fun - fnew
@@ -177,6 +179,7 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     new OptimizerResult(_weight, Some(g), Some(fun), Some(msg))
   }
 
+
   private[this] def trcg(delta: Double, w: Vector, g: Vector,
                          s: Vector, r: Vector, iter: Int): (Int, String) = {
     val d = VectorUtils.newVectorAs(w)
@@ -196,10 +199,22 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     var cg_iter: Int = 0
     rTr = dot(r, r)
     while (true) {
+
       if (euclideanNorm(r) <= cgtol) return (cg_iter, "")
       cg_iter += 1
       //      BLAS.zero(Hd)
+      if (cg_iter < 10) {
+//        println("s:" + s)
+//        println("r:" + r)
+//        println("Hd1:" + Hd)
+//        println("d1:" + d)
+      }
       function.hessianVector(w, d, Hd, cg_iter == 1)
+      if (cg_iter < 10) {
+//        println("Hd2:" + Hd)
+//        println("d2:" + d)
+      }
+
 
       var alpha = rTr / dot(d, Hd)
 

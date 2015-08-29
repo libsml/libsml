@@ -29,6 +29,12 @@ object BLAS extends Serializable {
     _nativeBLAS
   }
 
+  def sum(x: Vector): Double = {
+    var sum: Double = 0
+    x.foreachNoZero((_, v) => sum += v)
+    sum
+  }
+
   def dot(x: Vector, y: Vector): Double = {
     (x, y) match {
       case (dx: DenseVector, dy: DenseVector) =>
@@ -244,9 +250,9 @@ object BLAS extends Serializable {
    * x = a * x
    */
   def scal(a: Double, x: Vector): Unit = {
-    if(a==0){
+    if (a == 0) {
       zero(x)
-    }else if(a!=1) {
+    } else if (a != 1) {
       x match {
         case sx: SparseVector =>
           f2jBLAS.dscal(sx.values.size, a, sx.values, 1)
@@ -254,7 +260,7 @@ object BLAS extends Serializable {
           f2jBLAS.dscal(dx.values.size, a, dx.values, 1)
         case mx: MapVector =>
           f2jBLAS.dscal(mx.values.size, a, mx.values, 1)
-        case _=>
+        case _ =>
           throw new IllegalArgumentException("Scale exception!")
       }
     }

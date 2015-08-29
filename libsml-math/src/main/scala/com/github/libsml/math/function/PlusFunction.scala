@@ -74,4 +74,8 @@ class PlusFunction(private val first: Option[Function], private var second: Opti
     first.foreach(_.invertHessianVector(w, d, hv, isUpdateHessian, false))
     second.foreach(_.invertHessianVector(w, d, hv, isUpdateHessian, false))
   }
+
+  override def isInBound(w: linalg.Vector): Boolean = {
+    first.map(_.isInBound(w)).getOrElse(true) && second.map(_.isInBound(w)).getOrElse(true)
+  }
 }

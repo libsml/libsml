@@ -3,10 +3,13 @@ package com.github.libsml.model.classification
 
 import LogisticRegression._
 import com.github.libsml.math.function.Function
-import com.github.libsml.math.util.MLMath
+import com.github.libsml.math.util.{VectorUtils, MLMath}
 import com.github.libsml.model.Model
 import com.github.libsml.math.linalg.{BLAS, Vector}
-import com.github.libsml.model.data.LabeledVector
+import com.github.libsml.model.data.{WeightedLabeledVector, LabeledVector}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
+import com.github.libsml.commons.util.RDDFunctions._
 
 /**
  * Created by huangyu on 15/7/26.
@@ -25,8 +28,106 @@ class LogisticRegressionModel(var w: Vector) extends Model[Vector, Vector] {
 }
 
 
-class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
-                                   val featureNum: Int = -1, val classNum: Int = 2, val dataWeight: Option[Array[Double]] = None)
+class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int,
+                         val featureNum: Int = -1, val classNum: Int = 2)
+  extends Function {
+
+  private[this] var wBroadcast: Broadcast[Vector] = null
+
+  override def isInBound(w: Vector): Boolean = true
+
+  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = {
+    f
+  }
+
+  override def gradient(w: Vector, g: Vector, setZero: Boolean): Double = {
+
+    if (setZero) {
+      BLAS.zero(g)
+    }
+
+    if (wBroadcast != null) {
+      wBroadcast.unpersist()
+    }
+    wBroadcast = data.sparkContext.broadcast(w)
+    val (loss, gradient) = data.mapPartitions(ds => {
+      val weight = wBroadcast.value
+      var loss: Double = 0
+      val gradient: Vector = VectorUtils.newVectorAs(weight)
+      classNum match {
+        case 2 =>
+          while (ds.hasNext) {
+            val d = ds.next()
+            loss += gradientBinary(d.features, d.label, weight, gradient, d.weight)
+          }
+        case _ =>
+          while (ds.hasNext) {
+            val d = ds.next()
+            loss += gradientMultinomial(d.features, d.label, weight, gradient, classNum, featureNum, d.weight)
+          }
+      }
+      Seq((loss, gradient)).iterator
+    }).slaveReduce((lossGradient1, lossGradient2) => {
+      BLAS.axpy(1, lossGradient1._2, lossGradient2._2)
+      (lossGradient1._1 + lossGradient2._1, lossGradient2._2)
+    }, slaveNum)
+    BLAS.axpy(1, gradient, g)
+    loss
+  }
+
+  override def isDerivable: Boolean = true
+
+  /**
+   * Hessian  * d
+   * @param w current value
+   * @param d
+   * @param hv Hessian  * d
+   */
+  override def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+    if (setZero) {
+      BLAS.zero(hv)
+    }
+
+    val dBroadcast = data.sparkContext.broadcast(d)
+    classNum match {
+      case 2 =>
+        data.mapPartitions(ds => {
+          val weight = wBroadcast.value
+          val dWeight = dBroadcast.value
+          val hv: Vector = VectorUtils.newVectorAs(weight)
+          while (ds.hasNext) {
+            val data = ds.next()
+            hessianVectorBinary(data.features, data.label, weight, dWeight, hv, dw = data.weight)
+          }
+          Seq(hv).iterator
+        }
+        )
+      case _ =>
+        data.mapPartitions(ds => {
+          val weight = wBroadcast.value
+          val dWeight = dBroadcast.value
+          val hv: Vector = VectorUtils.newVectorAs(weight)
+          while (ds.hasNext) {
+            val data = ds.next()
+            hessianVectorMultinomial(data.features, data.label, weight, dWeight, hv, classNum, featureNum, dw = data.weight)
+          }
+          Seq(hv).iterator
+        }
+        )
+    }
+
+  }
+
+  override def isSecondDerivable: Boolean = true
+
+  override def invertHessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+    throw new UnsupportedOperationException("Invert hessian vector!")
+  }
+}
+
+
+class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
+                                   val featureNum: Int = -1, val classNum: Int = 2)
   extends Function {
 
   private var D: Option[Array[Double]] = None
@@ -53,7 +154,7 @@ class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
         var i = 0
         while (i < data.length) {
 
-          fx += gradientBinary(data(i).features, data(i).label, w, g, getDataWeight(i))
+          fx += gradientBinary(data(i).features, data(i).label, w, g, data(i).weight)
           i += 1
         }
 
@@ -61,7 +162,7 @@ class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
 
         var i = 0
         while (i < data.length) {
-          fx += gradientMultinomial(data(i).features, data(i).label, w, g, classNum, featureNum, getDataWeight(i))
+          fx += gradientMultinomial(data(i).features, data(i).label, w, g, classNum, featureNum, data(i).weight)
           i += 1
         }
 
@@ -91,7 +192,7 @@ class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
         }
         var i = 0
         while (i < data.length) {
-          hessianVectorBinary(data(i).features, data(i).label, w, d, hv, i, update, D, getDataWeight(i))
+          hessianVectorBinary(data(i).features, data(i).label, w, d, hv, i, update, D, data(i).weight)
           i += 1
         }
       case _ =>
@@ -104,7 +205,7 @@ class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
         var i = 0
         while (i < data.length) {
           hessianVectorMultinomial(data(i).features, data(i).label, w, d, hv,
-            classNum, featureNum, i, update, KD, getDataWeight(i))
+            classNum, featureNum, i, update, KD, data(i).weight)
           i += 1
         }
 
@@ -114,19 +215,21 @@ class SingleLogisticRegressionLoss(val data: Array[LabeledVector],
 
   override val isSecondDerivable: Boolean = true
 
-  private def getDataWeight(i: Int): Double = {
-    if (dataWeight.isDefined) (dataWeight.get)(i) else 1
-  }
+  //  private def getDataWeight(i: Int): Double = {
+  //    if (dataWeight.isDefined) (dataWeight.get)(i) else 1
+  //  }
 
   override def invertHessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
     throw new UnsupportedOperationException("Invert hessian vector!")
   }
+
+  override def isInBound(w: Vector): Boolean = true
 }
 
 
 object LogisticRegression {
 
-  def apply(data: Array[LabeledVector]): Function = {
+  def apply(data: Array[WeightedLabeledVector]): Function = {
     new SingleLogisticRegressionLoss(data)
   }
 

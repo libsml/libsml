@@ -17,8 +17,9 @@ class FixedPointBayesianOptimizer extends Optimizer {
 
   var _weight: Vector = Vector(Array(1.0, 1.0))
   var function: BayesianSmoothFunction = _
-  var clicks: Array[Double] = _
-  var impressions: Array[Double] = _
+  var clicks: Vector = _
+  var unClicks: Vector = _
+  var impressions: Vector = _
 
   private[this] var iter = 0
   private[this] var updateAlpha: Double = 0
@@ -46,13 +47,7 @@ class FixedPointBayesianOptimizer extends Optimizer {
     this.function = function.asInstanceOf[BayesianSmoothFunction]
     this.clicks = this.function.clicks
     this.impressions = this.function.impressions
-    require(clicks != null && impressions != null && clicks.length == impressions.length, "Bayesian smooth exception.")
-    var i: Int = 0
-    while (i < clicks.length) {
-      require(clicks(i) >= 0 && impressions(i) >= 0 && clicks(i) <= impressions(i),
-        "Bayesian smooth exception:click=" + clicks(i) + ",impression=" + impressions(i))
-      i += 1
-    }
+    this.unClicks = this.function.unClicks
     init()
     this
   }
@@ -72,26 +67,36 @@ class FixedPointBayesianOptimizer extends Optimizer {
     var tmp1: Double = 0
     var tmp2: Double = 0
 
-    var i = 0
-    while (i < clicks.length) {
-      tmp1 += digamma(weight(0) + clicks(i)) - digamma(weight(0))
-      tmp2 += digamma(weight(0) + weight(1) + impressions(i)) - digamma(weight(0) + weight(1))
-      i += 1
-    }
+    val diGammaAlpha = diGamma(weight(0))
+    val diGammaBeta = diGamma(weight(1))
+    val diGammaAlphaBeta = diGamma(weight(0) + weight(1))
+
+    clicks.foreachNoZero((i, v) => {
+      tmp1 += diGamma(weight(0) + v) - diGammaAlpha
+    })
+
+    impressions.foreachNoZero((i, v) => {
+      tmp2 += diGamma(weight(0) + weight(1) + v) - diGammaAlphaBeta
+    })
+
     updateAlpha = tmp1 / tmp2
     weight(0) *= updateAlpha
 
     tmp1 = 0
-    tmp2 = 0
-    i = 0
-    while (i < clicks.length) {
-      tmp1 += digamma(weight(1) + impressions(i) - clicks(i)) - digamma(weight(1))
-      tmp2 += digamma(weight(0) + weight(1) + impressions(i)) - digamma(weight(0) + weight(1))
-      i += 1
-    }
+    //    tmp2 = 0
+
+    unClicks.foreachNoZero((i, v) => {
+      tmp1 += diGamma(weight(1) + v) - diGammaBeta
+    })
+
 
     updateBeta = tmp1 / tmp2
     weight(1) *= updateBeta
+
+    println("updateAlpha:" + updateAlpha)
+    println("updateBeta:" + updateBeta)
+
+
 
     iter += 1
     new OptimizerResult(weight)

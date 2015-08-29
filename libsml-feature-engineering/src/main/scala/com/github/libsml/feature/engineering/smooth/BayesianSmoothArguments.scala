@@ -7,7 +7,7 @@ class BayesianSmoothArguments(args: Array[String]) {
 
   var input: String = null
   var output: String = null
-  var optimizerClass: String = "FixedPoint"
+  var optimizerClass: String = "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial"
   var keyIndex: Int = 0
   var clickIndex: Int = 1
   var impressionIndex: Int = 2

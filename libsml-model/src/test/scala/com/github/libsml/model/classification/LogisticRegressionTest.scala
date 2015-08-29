@@ -1,7 +1,7 @@
 package com.github.libsml.model.classification
 
 import com.github.libsml.math.linalg.Vector
-import com.github.libsml.model.data.LabeledVector
+import com.github.libsml.model.data.{WeightedLabeledVector, LabeledVector}
 import com.github.libsml.math.function.Function._
 import com.github.libsml.model.regularization.L2Regularization
 
@@ -18,8 +18,8 @@ object LogisticRegressionTest {
   }
 
   def singleLossTest(): Unit = {
-    val data = Array(new LabeledVector(1, Vector(Array(1.0, 0.0))),
-      new LabeledVector(-1, Vector(Array(0.0, 1.0))))
+    val data = Array(new WeightedLabeledVector(1, Vector(Array(1.0, 0.0))),
+      new WeightedLabeledVector(-1, Vector(Array(0.0, 1.0))))
     val lr = LogisticRegression(data)
     val w = Vector(Array(1.0, 1.0))
     val g = Vector(Array(0.0, 0.0))

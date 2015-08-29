@@ -7,6 +7,8 @@ import com.github.libsml.math.linalg._
  */
 trait Function {
 
+  def isInBound(w: Vector): Boolean
+
   def isDerivable: Boolean
 
   def isSecondDerivable: Boolean

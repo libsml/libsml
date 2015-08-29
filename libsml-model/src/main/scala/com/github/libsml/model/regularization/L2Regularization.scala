@@ -44,4 +44,6 @@ class L2Regularization(val lambda: Double) extends Function {
     }
     BLAS.axpy(1 / lambda, d, hv)
   }
+
+  override def isInBound(w: Vector): Boolean = true
 }
