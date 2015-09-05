@@ -6,7 +6,7 @@ import com.github.libsml.math.linalg._
 /**
  * Created by huangyu on 15/7/26.
  */
-class L2Regularization(val lambda: Double) extends Function {
+class L2Regularization(val lambda: Double) extends Function[Vector] {
 
   require(lambda > 0, "L2Regularization exception:lambda=%f must >0".format(lambda))
 
@@ -15,12 +15,12 @@ class L2Regularization(val lambda: Double) extends Function {
   override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
 
   //g+w,w dot w
-  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): Double = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector,Double) = {
     if (setZero) {
       BLAS.zero(g)
     }
     BLAS.axpy(lambda, w, g)
-    BLAS.dot(w, w) / 2
+    (g,BLAS.dot(w, w) / 2)
   }
 
   /**

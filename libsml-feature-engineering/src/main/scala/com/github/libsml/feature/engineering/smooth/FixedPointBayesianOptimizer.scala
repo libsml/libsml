@@ -8,9 +8,9 @@ import com.github.libsml.optimization.{OptimizerResult, Optimizer}
 /**
  * Created by huangyu on 15/8/23.
  */
-class FixedPointBayesianOptimizer extends Optimizer {
+class FixedPointBayesianOptimizer extends Optimizer[Vector] {
 
-  def this(function: Function) = {
+  def this(function: Function[Vector]) = {
     this()
     setFunction(function)
   }
@@ -43,7 +43,7 @@ class FixedPointBayesianOptimizer extends Optimizer {
     this
   }
 
-  override def setFunction(function: Function): FixedPointBayesianOptimizer.this.type = {
+  override def setFunction(function: Function[Vector]): FixedPointBayesianOptimizer.this.type = {
     this.function = function.asInstanceOf[BayesianSmoothFunction]
     this.clicks = this.function.clicks
     this.impressions = this.function.impressions
@@ -63,7 +63,7 @@ class FixedPointBayesianOptimizer extends Optimizer {
   //TODO:
   override def f: Double = -1
 
-  override def nextIteration(): OptimizerResult = {
+  override def nextIteration(): OptimizerResult[Vector] = {
     var tmp1: Double = 0
     var tmp2: Double = 0
 

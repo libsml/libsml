@@ -10,10 +10,10 @@ import com.github.libsml.commons.util.MapWrapper._
 /**
  * Created by huangyu on 15/8/23.
  */
-class FixedPointDirichletMultinomial(_function: Function) extends Optimizer {
+class FixedPointDirichletMultinomial(_function: Function[Vector]) extends Optimizer[Vector] {
 
 
-  def this(_function: Function, map: Map[String, String]) {
+  def this(_function: Function[Vector], map: Map[String, String]) {
     this(_function)
     this.epsion = map.getDouble("fixpoint.epsion", epsion)
     this.maxIteration = map.getInt("fixpoint.maxIteration", maxIteration)
@@ -45,7 +45,8 @@ class FixedPointDirichletMultinomial(_function: Function) extends Optimizer {
     sums = function.sums
     N = function.N
     K = function.K
-    _weight = Vector(Array.fill(K)(1.0))
+    //        _weight = Vector(Array.fill(K)(1.0))
+    _weight = function.prior()
 
   }
 
@@ -58,7 +59,7 @@ class FixedPointDirichletMultinomial(_function: Function) extends Optimizer {
     this
   }
 
-  override def setFunction(function: Function): FixedPointDirichletMultinomial.this.type = {
+  override def setFunction(function: Function[Vector]): FixedPointDirichletMultinomial.this.type = {
     this.function = function.asInstanceOf[DirichletMultinomial]
     init()
     this
@@ -69,11 +70,12 @@ class FixedPointDirichletMultinomial(_function: Function) extends Optimizer {
   override def isConvergence(): Boolean =
     iter > maxIteration || isStop
 
-  //TODO:
+  //TODO:compute the function value
   override def f: Double = -1
 
-  override def nextIteration(): OptimizerResult = {
+  override def nextIteration(): OptimizerResult[Vector] = {
 
+    //    println("Iter:" + iter + ",time:" + System.currentTimeMillis() / 1000)
 
     var dSum: Double = 0
     val wSum = BLAS.sum(weight)

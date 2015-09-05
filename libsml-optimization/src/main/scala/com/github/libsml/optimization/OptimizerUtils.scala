@@ -17,58 +17,59 @@ object OptimizerUtils {
   }
 
   // Create an instance of the class with the given name
-  def instantiateOptimizer(className: String): Optimizer = {
+  def instantiateOptimizer(className: String): Optimizer[Vector] = {
     instantiateOptimizer(fullClassName(className), Map[String, String]())
   }
 
   // Create an instance of the class with the given name
-  def instantiateOptimizer(_className: String, map: Map[String, String]): Optimizer = {
+  def instantiateOptimizer(_className: String, map: Map[String, String]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
       cls.getConstructor(classOf[Map[String, String]])
         .newInstance(map)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
-        cls.getConstructor().newInstance().asInstanceOf[Optimizer]
+        cls.getConstructor().newInstance().asInstanceOf[Optimizer[Vector]]
     }
   }
 
 
-  def instantiateOptimizer(_className: String, weight: Vector): Optimizer = {
+  def instantiateOptimizer(_className: String, weight: Vector): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
+
     try {
       cls.getConstructor(classOf[Vector])
         .newInstance(weight)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
-        cls.getConstructor().newInstance().asInstanceOf[Optimizer].prior(weight)
+        cls.getConstructor().newInstance().asInstanceOf[Optimizer[Vector]].prior(weight)
     }
   }
 
-  def instantiateOptimizer(_className: String, function: Function): Optimizer = {
+  def instantiateOptimizer(_className: String, function: Function[Vector]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
-      cls.getConstructor(classOf[Function])
+      cls.getConstructor(classOf[Function[Vector]])
         .newInstance(function)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
-        cls.getConstructor().newInstance().asInstanceOf[Optimizer].setFunction(function)
+        cls.getConstructor().newInstance().asInstanceOf[Optimizer[Vector]].setFunction(function)
     }
   }
 
-  def instantiateOptimizer(_className: String, weight: Vector, map: Map[String, String]): Optimizer = {
+  def instantiateOptimizer(_className: String, weight: Vector, map: Map[String, String]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
       cls.getConstructor(classOf[Vector], classOf[Map[String, String]])
         .newInstance(weight, map)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
         try {
@@ -77,58 +78,58 @@ object OptimizerUtils {
           case _: NoSuchMethodException =>
             cls.getConstructor(classOf[Map[String, String]])
               .newInstance(map)
-              .asInstanceOf[Optimizer].prior(weight)
+              .asInstanceOf[Optimizer[Vector]].prior(weight)
         }
     }
   }
 
-  def instantiateOptimizer(_className: String, weight: Vector, function: Function): Optimizer = {
+  def instantiateOptimizer(_className: String, weight: Vector, function: Function[Vector]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
-      cls.getConstructor(classOf[Vector], classOf[Function])
+      cls.getConstructor(classOf[Vector], classOf[Function[Vector]])
         .newInstance(weight, function)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
         try {
           instantiateOptimizer(className, weight).setFunction(function)
         } catch {
           case _: NoSuchMethodException =>
-            cls.getConstructor(classOf[Function])
+            cls.getConstructor(classOf[Function[Vector]])
               .newInstance(function)
-              .asInstanceOf[Optimizer]
+              .asInstanceOf[Optimizer[Vector]]
         }
     }
   }
 
-  def instantiateOptimizer(_className: String, map: Map[String, String], function: Function): Optimizer = {
+  def instantiateOptimizer(_className: String, map: Map[String, String], function: Function[Vector]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
-      cls.getConstructor(classOf[Map[String, String]], classOf[Function])
+      cls.getConstructor(classOf[Map[String, String]], classOf[Function[Vector]])
         .newInstance(map, function)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
         try {
           instantiateOptimizer(className, map).setFunction(function)
         } catch {
           case _: NoSuchMethodException =>
-            cls.getConstructor(classOf[Function])
+            cls.getConstructor(classOf[Function[Vector]])
               .newInstance(function)
-              .asInstanceOf[Optimizer]
+              .asInstanceOf[Optimizer[Vector]]
         }
     }
   }
 
-  def instantiateOptimizer(_className: String, weight: Vector, map: Map[String, String], function: Function): Optimizer = {
+  def instantiateOptimizer(_className: String, weight: Vector, map: Map[String, String], function: Function[Vector]): Optimizer[Vector] = {
     val className = fullClassName(_className)
     val cls = Class.forName(className)
     try {
-      cls.getConstructor(classOf[Vector], classOf[Map[String, String]], classOf[Function])
+      cls.getConstructor(classOf[Vector], classOf[Map[String, String]], classOf[Function[Vector]])
         .newInstance(weight, map, function)
-        .asInstanceOf[Optimizer]
+        .asInstanceOf[Optimizer[Vector]]
     } catch {
       case _: NoSuchMethodException =>
         try {

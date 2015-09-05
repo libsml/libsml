@@ -4,13 +4,14 @@ import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.math.linalg.BLAS
+import com.github.libsml.math.linalg.BLAS._
 import com.github.libsml.math.util.Gamma._
 import com.github.libsml.math.util.VectorUtils
 
 /**
  * Created by huangyu on 15/8/25.
  */
-class DirichletMultinomial(val data: Array[Vector]) extends Function {
+class DirichletMultinomial(val data: Array[Vector]) extends Function[Vector] {
 
   checkArguments()
   var _1q: Vector = _
@@ -31,7 +32,7 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function {
     f
   }
 
-  override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean): Double = {
+  override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean = true): (Vector, Double) = {
     if (setZero) {
       BLAS.zero(g)
     }
@@ -70,7 +71,7 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function {
 
     //    println("g:" + g)
 
-    -f
+    (g, -f)
   }
 
   /**
@@ -80,7 +81,7 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function {
    * @param hv Hessian  * d
    */
   override def hessianVector(w: linalg.Vector, d: linalg.Vector, hv: linalg.Vector,
-                             isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+                             isUpdateHessian: Boolean, setZero: Boolean = true): Unit = {
 
     if (setZero) {
       BLAS.zero(hv)
@@ -109,7 +110,7 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function {
   override def isSecondDerivable: Boolean = true
 
   override def invertHessianVector(w: linalg.Vector, d: linalg.Vector, hv: linalg.Vector,
-                                   isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+                                   isUpdateHessian: Boolean, setZero: Boolean = true): Unit = {
 
     if (setZero) {
       BLAS.zero(hv)
@@ -167,5 +168,36 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function {
       k += 1
     }
     flag
+  }
+
+  def prior(): Vector = {
+
+    //TODO:K is more than 2
+    val weight = Vector(Array.fill(K)(1.0))
+    K match {
+      case 2 =>
+        var sumP1: Double = 0
+        var sumP2: Double = 0
+        var sumP1_2: Double = 0
+        var sumP2_2: Double = 0
+        sums.foreachNoZero((i, v) => {
+          var tmp = data(0)(i) / v
+          sumP1 += tmp
+          sumP1_2 += tmp * tmp
+          tmp = data(1)(i) / v
+          sumP2 += tmp
+          sumP2_2 += tmp * tmp
+        })
+        val p1 = sumP1 / N
+        val p2 = sumP2 / N
+        val p1_2 = sumP1_2 / N
+        val p2_2 = sumP2_2 / N
+
+        val sumAlpha = ((p1 - p1_2) / (p1_2 - p1 * p1))
+        weight(0) = sumAlpha * p1
+        weight(1) = sumAlpha - weight(0)
+      case _ =>
+    }
+    weight
   }
 }

@@ -36,14 +36,14 @@ object BayesianSmooth extends Logging {
       })
       //      val function = new BayesianSmoothFunction(clicks, unClicks)
       val function = new DirichletMultinomial(Array(clicks, unClicks))
-      val optimizer = OptimizerUtils.instantiateOptimizer(optimizerClassName, function)
+      val optimizer = OptimizerUtils.instantiateOptimizer(optimizerClassName, function.prior(), function)
       var iter = 0
-      logInfo("start")
+      logInfo("start key:" + key)
       for (r <- optimizer) {
         logInfo("iter:" + iter + "," + "key:" + key + ",alpha:" + r.w(0) + ",beta:" + r.w(1))
         iter += 1
       }
-      logInfo("end")
+      logInfo("end key:" + key)
       val alphaBeta = optimizer.optimize()._1
       key + "\t" + alphaBeta(0) + "\t" + alphaBeta(1)
     }).collect().foreach(p.println _)

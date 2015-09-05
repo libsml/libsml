@@ -1,12 +1,13 @@
 package com.github.libsml.math.function
 
 import com.github.libsml.math.linalg
+import com.github.libsml.math.linalg.Vector
 import com.github.libsml.math.linalg.BLAS
 
 /**
  * Created by huangyu on 15/7/25.
  */
-class PlusFunction(private val first: Option[Function], private var second: Option[Function] = None) extends Function {
+class PlusFunction(private val first: Option[Function[Vector]], private var second: Option[Function[Vector]] = None) extends Function[Vector] {
 
 
   require(first.map(_.isDerivable).getOrElse(true) ||
@@ -23,11 +24,11 @@ class PlusFunction(private val first: Option[Function], private var second: Opti
       second.filter(!_.isDerivable).map(_.subGradient(w, f, g, sg)).getOrElse(0.0)
   }
 
-  override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean = true): Double = {
+  override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean = true): (Vector, Double) = {
     if (setZero) {
       BLAS.zero(g)
     }
-    first.map(_.gradient(w, g, false)).getOrElse(0.0) + second.map(_.gradient(w, g, false)).getOrElse(0.0)
+    (g, first.map(_.gradient(w, g, false)._2).getOrElse(0.0) + second.map(_.gradient(w, g, false)._2).getOrElse(0.0))
   }
 
   /**
@@ -52,7 +53,7 @@ class PlusFunction(private val first: Option[Function], private var second: Opti
     }
   }
 
-  def +(function: Function): PlusFunction = {
+  def +(function: Function[Vector]): PlusFunction = {
 
     require(this.isDerivable || function.isDerivable, "Plus function exception!")
 

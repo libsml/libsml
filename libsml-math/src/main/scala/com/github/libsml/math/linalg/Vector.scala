@@ -688,6 +688,7 @@ class MapVector(initCapacity: Int,
 
 object Vector {
 
+  val TYPE: Class[Vector] = classOf[Vector]
 
   val DEFAULT_CAPACITY: Int = 277
   val DEFAULT_MIN_LOAD_FACTOR: Double = 0.2
@@ -741,6 +742,8 @@ object Vector {
 
 
 object Vectors {
+
+
   def main(args: Array[String]): Unit = {
     val p = new PrintWriter("tmp")
     //    val v1 = Vector(20000000)

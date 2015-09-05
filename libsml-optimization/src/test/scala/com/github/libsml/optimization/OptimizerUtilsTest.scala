@@ -9,6 +9,6 @@ import com.github.libsml.math.function.Function
 object OptimizerUtilsTest {
 
   def main(args: Array[String]) {
-    OptimizerUtils.instantiateOptimizer("com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial",null.asInstanceOf[Function])
+    OptimizerUtils.instantiateOptimizer("com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial", null.asInstanceOf[Function[Vector]])
   }
 }

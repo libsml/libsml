@@ -12,8 +12,8 @@ class LinearSearchWolf(val param: LineSearchParameter) extends LineSearch {
 
   //  val param: LineSearchParameter = new LineSearchParameter()
 
-  override def search(w: linalg.Vector, f: Double, g: linalg.Vector, s: linalg.Vector, stp: Double,
-                      function: Function,wp:Vector): (Int, Double, Double) = {
+  def search(w: linalg.Vector, f: Double, g: linalg.Vector, s: linalg.Vector, stp: Double,
+             function: Function[Vector], wp: Vector): (Int, Double, Double) = {
     var count: Int = 0
     var width: Double = 0
     var dg: Double = 0
@@ -48,7 +48,7 @@ class LinearSearchWolf(val param: LineSearchParameter) extends LineSearch {
       if (!function.isInBound(w)) {
         width = dec
       } else {
-        fnew = function.gradient(w, g)
+        fnew = function.gradient(w, g)._2
         count += 1
         if (!function.isInBound(w) || fnew > finit + step * dgtest) {
           width = dec
@@ -73,8 +73,78 @@ class LinearSearchWolf(val param: LineSearchParameter) extends LineSearch {
         throw new IllegalStateException("LBFGSERR_MAXIMUMLINESEARCH")
       }
       step *= width
-//      println("step:"+step)
+      //      println("step:"+step)
     }
     return (count, fnew, step)
+  }
+
+  override def search(function: Function[Double], initStep: Double): (Int, Double, Double) = {
+
+    val (dginit, finit) = function.gradient(0, 0)
+
+    /* Make sure that s points to a descent direction. */
+    if (dginit > 0) {
+      throw new IllegalStateException("Line search:INCREASEGRADIENT")
+    }
+
+    val dgtest = param.ftol * dginit
+    var count: Int = 0
+    var width: Double = 0
+    var dg: Double = 0
+    var step = initStep
+    var fnew = finit
+    val dec: Double = 0.5f
+    val inc: Double = 2.1f
+
+    var outOfBound: Boolean = false
+
+    while (true) {
+
+      while (!function.isInBound(step)) {
+        outOfBound = true
+        step *= dec
+      }
+
+      val dgf = function.gradient(step, 0)
+      dg = dgf._1
+      fnew = dgf._2
+      count += 1
+
+      if (outOfBound) {
+        while (fnew > finit + step * dgtest) {
+          step *= dec
+          val dgf = function.gradient(step, 0)
+          dg = dgf._1
+          fnew = dgf._2
+          count += 1
+        }
+        return (count, fnew, step)
+      }
+
+      if (fnew > finit + step * dgtest) {
+        width = dec
+      } else {
+        /* Check the Wolfe condition. */
+        if (dg < param.wolfe * dginit) {
+          width = inc
+        } else {
+          return (count, fnew, step)
+        }
+
+      }
+      if (step < param.minStep) {
+        throw new IllegalStateException("LBFGSERR_MINIMUMSTEP")
+      }
+      if (step > param.maxStep) {
+        throw new IllegalStateException("LBFGSERR_MAXIMUMSTEP")
+      }
+      if (param.maxLinesearch <= count) {
+        throw new IllegalStateException("LBFGSERR_MAXIMUMLINESEARCH")
+      }
+      step *= width
+      //      println("step:"+step)
+    }
+    (count, fnew, step)
+
   }
 }

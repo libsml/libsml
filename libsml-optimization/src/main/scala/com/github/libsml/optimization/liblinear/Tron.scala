@@ -13,14 +13,14 @@ import com.github.libsml.optimization.{Optimizer, OptimizerResult}
  */
 
 //TODO:Serializable
-class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optimizer {
+class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optimizer[Vector] {
 
-  def this(_weight: Vector, parameter: LiblinearParameter, function: Function) = {
+  def this(_weight: Vector, parameter: LiblinearParameter, function: Function[Vector]) = {
     this(_weight, parameter)
     this.function = function
   }
 
-  def this(_weight: Vector, map: Map[String, String], function: Function) = {
+  def this(_weight: Vector, map: Map[String, String], function: Function[Vector]) = {
     this(_weight, new LiblinearParameter())
     val para = this.parameter
     this.parameter.maxIterations = map.getInt("tron.maxIterations", para.maxIterations)
@@ -35,7 +35,7 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     this.parameter.epsilon = map.getDouble("tron.epsilon", para.epsilon)
   }
 
-  var function: Function = _
+  var function: Function[Vector] = _
 
   //  private[this] val log: Logger = LoggerFactory.getLogger(classOf[Tron])
 
@@ -86,7 +86,7 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     this
   }
 
-  override def setFunction(function: Function): Tron.this.type = {
+  override def setFunction(function: Function[Vector]): Tron.this.type = {
     this.function = function
     iter = 0
     isStop = false
@@ -95,10 +95,10 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
 
   override def isConvergence(): Boolean = (parameter.maxIterations != 0 && iter > parameter.maxIterations) || isStop
 
-  override def nextIteration(): OptimizerResult = {
+  override def nextIteration(): OptimizerResult[Vector] = {
     var msg = ""
     if (iter == 0) {
-      fun = function.gradient(_weight, g)
+      fun = function.gradient(_weight, g)._2
       delta = BLAS.euclideanNorm(g)
       gnorm1 = delta
       gnorm = gnorm1
@@ -119,9 +119,9 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
       gs = dot(g, s)
       prered = -0.5f * (gs - dot(s, r))
 
-//      println("wnew:"+w_new)
-      fnew = function.gradient(w_new, g_new)
-//      println("wgnew:"+g_new)
+      //      println("wnew:"+w_new)
+      fnew = function.gradient(w_new, g_new)._2
+      //      println("wgnew:"+g_new)
 
       // Compute the actual reduction.
       actred = fun - fnew
@@ -204,15 +204,15 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
       cg_iter += 1
       //      BLAS.zero(Hd)
       if (cg_iter < 10) {
-//        println("s:" + s)
-//        println("r:" + r)
-//        println("Hd1:" + Hd)
-//        println("d1:" + d)
+        //        println("s:" + s)
+        //        println("r:" + r)
+        //        println("Hd1:" + Hd)
+        //        println("d1:" + d)
       }
       function.hessianVector(w, d, Hd, cg_iter == 1)
       if (cg_iter < 10) {
-//        println("Hd2:" + Hd)
-//        println("d2:" + d)
+        //        println("Hd2:" + Hd)
+        //        println("d2:" + d)
       }
 
 
@@ -249,5 +249,4 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
     (cg_iter, "")
   }
 }
-
 

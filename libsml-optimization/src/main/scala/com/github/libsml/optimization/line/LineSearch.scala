@@ -9,6 +9,5 @@ import com.github.libsml.math.function.Function
  */
 trait LineSearch {
 
-  def search(w: Vector, f: Double, g: Vector, s: Vector, stp: Double,
-             function: Function, wp: Vector): (Int, Double, Double)
+  def search(function: Function[Double],initStep:Double): (Int, Double, Double)
 }

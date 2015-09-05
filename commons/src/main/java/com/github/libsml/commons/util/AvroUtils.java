@@ -39,7 +39,7 @@ public class AvroUtils {
             Preconditions.checkArgument(isNullOK, key + " is null");
         }
         Preconditions.checkArgument(temp instanceof Integer, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a int");
         return (Integer) temp;
     }
 
@@ -50,7 +50,7 @@ public class AvroUtils {
             return defaultValue;
         }
         Preconditions.checkArgument(temp instanceof Integer, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a int");
 
         return (Integer) temp;
     }
@@ -62,7 +62,7 @@ public class AvroUtils {
             Preconditions.checkArgument(isNullOK, key + " is null");
         }
         Preconditions.checkArgument(temp instanceof Float, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a float");
         return (Float) temp;
     }
 
@@ -73,7 +73,7 @@ public class AvroUtils {
             return defaultValue;
         }
         Preconditions.checkArgument(temp instanceof Float, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a float");
 
         return (Float) temp;
     }
@@ -85,7 +85,7 @@ public class AvroUtils {
             Preconditions.checkArgument(isNullOK, key + " is null");
         }
         Preconditions.checkArgument(temp instanceof Double, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a double");
         return (Double) temp;
     }
 
@@ -96,7 +96,7 @@ public class AvroUtils {
             return defaultValue;
         }
         Preconditions.checkArgument(temp instanceof Double, key + "=" + temp.toString()
-                + " is not a string");
+                + " is not a double");
 
         return (Double) temp;
     }

@@ -30,7 +30,7 @@ class LogisticRegressionModel(var w: Vector) extends Model[Vector, Vector] {
 
 class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int,
                          val featureNum: Int = -1, val classNum: Int = 2)
-  extends Function {
+  extends Function[Vector] {
 
   private[this] var wBroadcast: Broadcast[Vector] = null
 
@@ -40,7 +40,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
     f
   }
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean): Double = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector,Double) = {
 
     if (setZero) {
       BLAS.zero(g)
@@ -72,7 +72,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
       (lossGradient1._1 + lossGradient2._1, lossGradient2._2)
     }, slaveNum)
     BLAS.axpy(1, gradient, g)
-    loss
+    (g,loss)
   }
 
   override def isDerivable: Boolean = true
@@ -128,7 +128,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
 
 class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
                                    val featureNum: Int = -1, val classNum: Int = 2)
-  extends Function {
+  extends Function[Vector] {
 
   private var D: Option[Array[Double]] = None
   private var KD: Option[Array[Array[Double]]] = None
@@ -140,7 +140,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
   }
 
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): Double = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector,Double) = {
 
 
     if (setZero) {
@@ -167,7 +167,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
         }
 
     }
-    fx
+    (g,fx)
 
   }
 
@@ -229,7 +229,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
 
 object LogisticRegression {
 
-  def apply(data: Array[WeightedLabeledVector]): Function = {
+  def apply(data: Array[WeightedLabeledVector]): Function[Vector] = {
     new SingleLogisticRegressionLoss(data)
   }
 

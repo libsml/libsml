@@ -3,21 +3,23 @@ package com.github.libsml.optimization
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg.Vector
 
+import scala.reflect.ClassTag
+
 /**
  * Created by huangyu on 15/8/14.
  */
-trait Optimizer extends Iterable[OptimizerResult] {
+abstract class Optimizer[W] extends Iterable[OptimizerResult[W]] {
 
 
-  override def iterator(): Iterator[OptimizerResult] = {
-    new Iterator[OptimizerResult] {
+  override def iterator(): Iterator[OptimizerResult[W]] = {
+    new Iterator[OptimizerResult[W]] {
       override def hasNext: Boolean = !isConvergence()
 
-      override def next(): OptimizerResult = nextIteration()
+      override def next(): OptimizerResult[W] = nextIteration()
     }
   }
 
-  def optimize(): (Vector, Double) = {
+  def optimize(): (W, Double) = {
     val it = iterator()
     while (it.hasNext) {
       it.next()
@@ -25,23 +27,23 @@ trait Optimizer extends Iterable[OptimizerResult] {
     (weight, f)
   }
 
-  def prior(weight: Vector): this.type
+  def prior(weight: W): this.type
 
-  def setFunction(function: Function): this.type
+  def setFunction(function: Function[W]): this.type
 
-  def weight: Vector
+  def weight: W
 
   def f: Double
 
   def isConvergence(): Boolean
 
-  def nextIteration(): OptimizerResult
+  def nextIteration(): OptimizerResult[W]
 
 }
 
-case class OptimizerResult(val w: Vector,
-                           val g: Option[Vector] = None,
-                           val f: Option[Double] = None,
-                           val msg: Option[String] = None) {
+case class OptimizerResult[W](val w: W,
+                                        val g: Option[W] = None,
+                                        val f: Option[Double] = None,
+                                        val msg: Option[String] = None) {
 
 }

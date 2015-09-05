@@ -8,7 +8,7 @@ import com.github.libsml.math.util.VectorUtils
 /**
  * Created by huangyu on 15/8/23.
  */
-class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends Function {
+class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends Function[Vector] {
 
   val impressions: Vector = VectorUtils.newVectorAs(clicks)
   BLAS.copy(unClicks, impressions)
@@ -22,7 +22,7 @@ class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends F
 
   override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean): Double = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector,Double) = {
     val alpha = w(0)
     val beta = w(1)
     val alphaBeta = alpha + beta
@@ -64,7 +64,7 @@ class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends F
 
     g(0) = -dAlpha
     g(1) = -dBeta
-    -f
+    (g,-f)
   }
 
   /**
