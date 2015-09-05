@@ -75,6 +75,8 @@ class FixedPointDirichletMultinomial(_function: Function[Vector]) extends Optimi
 
   override def nextIteration(): OptimizerResult[Vector] = {
 
+
+    println()
     //    println("Iter:" + iter + ",time:" + System.currentTimeMillis() / 1000)
 
     var dSum: Double = 0
