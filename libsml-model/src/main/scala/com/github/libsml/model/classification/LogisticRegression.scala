@@ -6,10 +6,11 @@ import com.github.libsml.math.function.Function
 import com.github.libsml.math.util.{VectorUtils, MLMath}
 import com.github.libsml.model.Model
 import com.github.libsml.math.linalg.{BLAS, Vector}
-import com.github.libsml.model.data.{WeightedLabeledVector, LabeledVector}
+import com.github.libsml.model.data.{DataUtils, WeightedLabeledVector, LabeledVector}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import com.github.libsml.commons.util.RDDFunctions._
+import com.github.libsml.commons.util.MapWrapper._
 
 /**
  * Created by huangyu on 15/7/26.
@@ -17,20 +18,56 @@ import com.github.libsml.commons.util.RDDFunctions._
 
 class LogisticRegressionModel(var w: Vector) extends Model[Vector, Vector] {
 
+  def this() = {
+    this(null)
+  }
+
+  def this(w: Vector, threshold: Double) = {
+    this(w)
+    this.threshold = threshold
+  }
+
+  def this(w: Vector, map: Map[String, String]) = {
+    this(w)
+    this.threshold = map.getDouble("logisticModel.threshold", threshold)
+  }
+
+  private var threshold: Double = 0.5
+
   override def update(w: Vector): this.type = {
     this.w = w
     this
   }
 
-  override def probability(testPoint: Vector, w: Vector = this.w): Double = {
-    1 / (1 + Math.exp(-xv(testPoint, w)))
+  override def score(testPoint: Vector, k: Double): Double = {
+    k match {
+      case 1 =>
+        1 / (1 + Math.exp(-xv(testPoint, w)))
+      case _ =>
+        1 - 1 / (1 + Math.exp(-xv(testPoint, w)))
+    }
   }
+
+  override def value(testPoint: Vector): Double = {
+    val p = 1 / (1 + Math.exp(-xv(testPoint, w)))
+    if (p >= threshold) 1 else 0
+  }
+
+  override def save(path: String): Unit = {
+    DataUtils.writeVectorAddition2Avro(path, w, threshold)
+  }
+
 }
 
 
 class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int,
                          val featureNum: Int = -1, val classNum: Int = 2)
   extends Function[Vector] {
+
+  def this(data: RDD[WeightedLabeledVector], map: Map[String, String]) = {
+    this(data, map.getInt("featureNumber", -1), map.getInt("classNumber", 2))
+  }
+
 
   private[this] var wBroadcast: Broadcast[Vector] = null
 
@@ -40,7 +77,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
     f
   }
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector,Double) = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector, Double) = {
 
     if (setZero) {
       BLAS.zero(g)
@@ -72,7 +109,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
       (lossGradient1._1 + lossGradient2._1, lossGradient2._2)
     }, slaveNum)
     BLAS.axpy(1, gradient, g)
-    (g,loss)
+    (g, loss)
   }
 
   override def isDerivable: Boolean = true
@@ -130,6 +167,10 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
                                    val featureNum: Int = -1, val classNum: Int = 2)
   extends Function[Vector] {
 
+  def this(data: Array[WeightedLabeledVector], map: Map[String, String]) = {
+    this(data, map.getInt("featureNumber", -1), map.getInt("classNumber", 2))
+  }
+
   private var D: Option[Array[Double]] = None
   private var KD: Option[Array[Array[Double]]] = None
 
@@ -140,7 +181,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
   }
 
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector,Double) = {
+  override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector, Double) = {
 
 
     if (setZero) {
@@ -167,7 +208,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
         }
 
     }
-    (g,fx)
+    (g, fx)
 
   }
 

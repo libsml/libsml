@@ -78,13 +78,13 @@ object MapArguments {
       "Usage: Feature process map [options]\n" +
         "\n" +
         "Options:\n" +
-        "  -i  INPUT,  --input INPUT                         Input path \n" +
-        "  -o  OUTPUT, --output OUTPUT                       Output path\n" +
-        "  -r  REDUCE NUMBER                                 Reduce number (default: 1)\n" +
-        "  -m  MAP NUMBER                                    Map number (default: 1)\n" +
-        "  -wi WEIGHT INDEX                                  Weight index (default: -1,meaning the weight is 1.0)\n" +
-        "  -is INDEX1,INDEX1,...                             Indices of rows needed to map\n" +
-        "  -fs  FUNCTION1,FUNCTION,...                       Map functions\n"
+        "  -i   INPUT,  --input INPUT                         Input path \n" +
+        "  -o   OUTPUT, --output OUTPUT                       Output path (default:null,meaning don't save result)\n" +
+        "  -l   LABEL INDEX                                   Map number (default: 1)\n" +
+        "  -m   MAP NUMBER                                    Map number (default: 1)\n" +
+        "  -wi  WEIGHT INDEX                                  Weight index (default: -1,meaning the weight is 1.0)\n" +
+        "  -is  INDEX1,INDEX1,...                             Indices of rows needed to map\n" +
+        "  -fs  FUNCTION1,FUNCTION,...                        Map functions (regex:map_groupLength_mapPath|map_groupLength)\n"
     )
     System.exit(exitCode)
   }

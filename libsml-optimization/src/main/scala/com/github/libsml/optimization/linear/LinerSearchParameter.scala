@@ -1,9 +1,9 @@
-package com.github.libsml.optimization.line
+package com.github.libsml.optimization.linear
 
 /**
  * Created by huangyu on 15/8/26.
  */
-case class LineSearchParameter(/**
+case class LinerSearchParameter(/**
                                 * The minimum step of the line search routine. The default value is \c
                                 * 1e-20. This value need not be modified unless the exponents are too large
                                 * for the machine being used, or unless the problem is extremely badly

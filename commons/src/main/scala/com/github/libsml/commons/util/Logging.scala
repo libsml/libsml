@@ -4,13 +4,7 @@ package com.github.libsml.commons.util
  * Created by huangyu on 15/8/27.
  */
 
-import org.apache.log4j.LogManager
-import org.apache.log4j.PropertyConfigurator
 import org.apache.log4j.{LogManager, PropertyConfigurator}
-import org.apache.spark.util.Utils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.slf4j.impl.StaticLoggerBinder
 import org.slf4j.{Logger, LoggerFactory}
 import org.slf4j.impl.StaticLoggerBinder
 

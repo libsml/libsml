@@ -1,4 +1,4 @@
-package com.github.libsml.optimization.line
+package com.github.libsml.optimization.linear
 
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg.BLAS._
@@ -8,7 +8,7 @@ import com.github.libsml.math.util.VectorUtils
 /**
  * Created by huangyu on 15/8/31.
  */
-class LineSearchFunction(val w: Vector, val f: Double, val g: Vector, val direct: Vector,
+class LinearSearchFunction(val w: Vector, val f: Double, val g: Vector, val direct: Vector,
                          val function: Function[Vector], temp: Option[Vector]) extends Function[Double] {
 
   private[this] var oldStep: Double = 0

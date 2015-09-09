@@ -16,7 +16,6 @@ trait BinaryClassificationMetrics {
 
   def roc(): Array[(Double, Double)]
 
-
   def areaUnderROC(): Double
 
   def pr(): Array[(Double, Double)]
@@ -53,6 +52,8 @@ trait BinaryClassificationMetrics {
 class SingleBinaryClassificationMetrics(val scoreAndLabels: Array[(Double, Double)],
                                         val numBins: Int) extends BinaryClassificationMetrics {
 
+  def this(scoreAndLabels: Array[(Double, Double)]) = this(scoreAndLabels, 0)
+
   override def areaUnderROC(): Double =
     AreaUnderCurve.of(roc())
 
@@ -62,7 +63,7 @@ class SingleBinaryClassificationMetrics(val scoreAndLabels: Array[(Double, Doubl
 
   override def recallByThreshold(): Array[(Double, Double)] = createCurve(Recall)
 
-  override def pr(): Array[(Double, Double)] = createCurve(FalsePositiveRate, Recall, Some((0.0, 1.0)))
+  override def pr(): Array[(Double, Double)] = createCurve(Recall, Precision, Some((0.0, 1.0)))
 
   override def fMeasureByThreshold(beta: Double): Array[(Double, Double)] = createCurve(FMeasure(beta))
 
@@ -328,6 +329,18 @@ object BinaryClassificationMetrics {
 
   def apply(scoreAndLabels: Array[(Double, Double)], numBins: Int): BinaryClassificationMetrics = {
     new SingleBinaryClassificationMetrics(scoreAndLabels, numBins)
+  }
+
+  def apply(scoreAndLabels: Array[(Double, Double)]): BinaryClassificationMetrics = {
+    new SingleBinaryClassificationMetrics(scoreAndLabels)
+  }
+
+  def apply(scoreAndLabels: RDD[(Double, Double)], numBins: Int) = {
+    new SparkBinaryClassificationMetrics(scoreAndLabels, numBins)
+  }
+
+  def apply(scoreAndLabels: RDD[(Double, Double)]) = {
+    new SparkBinaryClassificationMetrics(scoreAndLabels)
   }
 
 

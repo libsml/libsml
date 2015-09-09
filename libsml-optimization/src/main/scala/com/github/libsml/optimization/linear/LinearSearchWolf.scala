@@ -1,4 +1,4 @@
-package com.github.libsml.optimization.line
+package com.github.libsml.optimization.linear
 
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg
@@ -8,7 +8,7 @@ import com.github.libsml.math.linalg.BLAS._
 /**
  * Created by huangyu on 15/8/26.
  */
-class LinearSearchWolf(val param: LineSearchParameter) extends LineSearch {
+class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
 
   //  val param: LineSearchParameter = new LineSearchParameter()
 

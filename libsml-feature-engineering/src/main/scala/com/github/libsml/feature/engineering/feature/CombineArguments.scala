@@ -63,7 +63,7 @@ object CombineArguments {
         "  -i  INPUT,  --input INPUT                         Input path \n" +
         "  -o  OUTPUT, --output OUTPUT                       Output path\n" +
         "  -m  MAP NUMBER                                    Map number (default: 1)\n" +
-        "  -p  IS PUT BACK                                   Is put rows of index1 and index2 back\n" +
+        "  -p  IS PUT BACK                                   Is put rows of index1 and index2 back(default:false)\n" +
         "  -i1 INDEX1                                        Index1 of row needed to combine\n" +
         "  -i2 INDEX2                                        Index2 of row needed to combine\n"
     )

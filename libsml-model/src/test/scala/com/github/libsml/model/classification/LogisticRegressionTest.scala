@@ -14,7 +14,7 @@ object LogisticRegressionTest {
     val a = Array(1.0, 3.0)
     val model = new LogisticRegressionModel(Vector(a))
 
-    assert(model.probability(Vector(Array(1.0))) == 1.0 / (1.0 + Math.exp(-1.0)))
+    assert(model.score(Vector(Array(1.0)),1.0) == 1.0 / (1.0 + Math.exp(-1.0)))
   }
 
   def singleLossTest(): Unit = {

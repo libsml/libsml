@@ -3,7 +3,7 @@ package com.github.libsml.optimization.newton
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg.{BLAS, Vector}
 import com.github.libsml.math.util.VectorUtils
-import com.github.libsml.optimization.line.{LineSearchFunction, LineSearchParameter, LinearSearchWolf, LineSearch}
+import com.github.libsml.optimization.linear.{LinearSearchFunction, LinerSearchParameter, LinearSearchWolf, LinearSearch}
 import com.github.libsml.optimization.{OptimizerResult, Optimizer}
 
 /**
@@ -19,7 +19,7 @@ class NewtonMethod extends Optimizer[Vector] {
   var _f: Double = Double.MaxValue
   var wp: Vector = _
 
-  var lineSearch: LineSearch = new LinearSearchWolf(new LineSearchParameter())
+  var lineSearch: LinearSearch = new LinearSearchWolf(new LinerSearchParameter())
 
   var g: Vector = null
   var d: Vector = null
@@ -74,7 +74,7 @@ class NewtonMethod extends Optimizer[Vector] {
     println("hv:" + hv)
     println(weight)
     BLAS.copy(weight, wp)
-    _f = lineSearch.search(new LineSearchFunction(weight, _f, g, hv, function, Some(wp)), /*if(iter==0) 1/BLAS.euclideanNorm(hv) else 1*/ 1.0)._2
+    _f = lineSearch.search(new LinearSearchFunction(weight, _f, g, hv, function, Some(wp)), /*if(iter==0) 1/BLAS.euclideanNorm(hv) else 1*/ 1.0)._2
     println(weight)
     //    BLAS.axpy(-1, hv, _weight)
 

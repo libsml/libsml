@@ -9,8 +9,10 @@ import com.github.libsml.math.function.Function
 object OptimizerUtils {
 
 
-  val shortFullMap: Map[String, String] = Map("Tron" -> "com.github.libsml.optimization.liblinear.Tron",
-    "FixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial")
+  val shortFullMap: Map[String, String] = Map("tron" -> "com.github.libsml.optimization.liblinear.Tron",
+    "Tron" -> "com.github.libsml.optimization.liblinear.Tron",
+    "FixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial",
+    "fixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial")
 
   private[this] def fullClassName(className: String): String = {
     shortFullMap.getOrElse(className, className)
