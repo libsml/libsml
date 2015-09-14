@@ -73,9 +73,9 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
 
   override def isInBound(w: Vector): Boolean = true
 
-  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = {
-    f
-  }
+  //  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = {
+  //    f
+  //  }
 
   override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector, Double) = {
 
@@ -176,9 +176,9 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
 
   override val isDerivable: Boolean = true
 
-  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = {
-    f
-  }
+  //  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = {
+  //    f
+  //  }
 
 
   override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector, Double) = {

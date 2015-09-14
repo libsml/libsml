@@ -12,7 +12,7 @@ class L2Regularization(val lambda: Double) extends Function[Vector] {
 
   override val isDerivable: Boolean = true
 
-  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
+//  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
 
   //g+w,w dot w
   override def gradient(w: Vector, g: Vector, setZero: Boolean = true): (Vector,Double) = {

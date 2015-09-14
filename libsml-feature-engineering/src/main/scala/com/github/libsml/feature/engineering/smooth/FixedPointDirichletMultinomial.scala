@@ -30,7 +30,7 @@ class FixedPointDirichletMultinomial(_function: Function[Vector]) extends Optimi
 
 
   private[this] var epsion: Double = 1E-10
-  private[this] var maxIteration: Int = 2000
+  private[this] var maxIteration: Int = 1000
 
   private[this] var iter = 0
   private[this] var isStop = false

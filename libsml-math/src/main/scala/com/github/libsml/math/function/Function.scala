@@ -16,8 +16,8 @@ abstract class Function[W] {
 
   def gradient(w: W, g: W, setZero: Boolean = true): (W, Double)
 
-  def subGradient(w: W, f: Double, g: W, sg: W): Double = {
-    f
+  def subGradient(w: W, f: Double, g: W, sg: W):(W,Double) = {
+    (g,f)
   }
 
 

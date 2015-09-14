@@ -4,7 +4,7 @@ data.feature.number=124
 data.bias=1
 #model.prior.path
 #model.prior.mode=hdfs_avro
-optimization.l2.c=1
+#optimization.l2.c=1
 input.paths=data/a9a.avro
 output.path=result
 test.paths=data/a9a.avro

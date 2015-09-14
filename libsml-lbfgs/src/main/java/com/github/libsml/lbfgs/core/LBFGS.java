@@ -23,7 +23,6 @@ public class LBFGS {
                              LBFGSParameter param) {
 
 
-
         int i, j, k, ls, bound;
         float[] step = new float[1];
 
@@ -125,8 +124,6 @@ public class LBFGS {
         }
 
 
-
-
         xp = new float[n];
         g = new float[n];
         gp = new float[n];
@@ -202,7 +199,7 @@ public class LBFGS {
 
         k = 1;
         while (true) {
-			/* Store the current position and gradient vectors. */
+            /* Store the current position and gradient vectors. */
             VecUtils.veccpy(xp, x);
             VecUtils.veccpy(gp, g);
 
@@ -234,10 +231,10 @@ public class LBFGS {
             gnorm = param.orthantwiseC == 0 ? VecUtils.vec2norm(g) : VecUtils.vec2norm(gp);
 
             if (progress != null) {
-                Statistics statistics=test==null?null:test.evaluate(x, k);
+                Statistics statistics = test == null ? null : test.evaluate(x, k);
 //                EvaluatorFunction.Statistics statistics=null;
                 if (progress.progress(x, g, fx[0], xnorm, gnorm, step[0], n, k,
-                        ls,statistics) != 0) {
+                        ls, statistics) != 0) {
                     log("Progress stop!");
                     if (ptrFx != null) {
                         ptrFx[0] = fx[0];
@@ -361,7 +358,6 @@ public class LBFGS {
         }
 
     }
-
 
 
     // public static float L2Norm(float[] x) {

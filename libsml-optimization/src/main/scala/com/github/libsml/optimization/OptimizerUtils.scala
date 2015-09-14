@@ -12,6 +12,7 @@ object OptimizerUtils {
   val shortFullMap: Map[String, String] = Map("tron" -> "com.github.libsml.optimization.liblinear.Tron",
     "Tron" -> "com.github.libsml.optimization.liblinear.Tron",
     "FixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial",
+    "median" -> "com.github.libsml.feature.engineering.smooth.MedianDirichletMultinomial",
     "fixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial")
 
   private[this] def fullClassName(className: String): String = {

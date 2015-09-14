@@ -1,6 +1,7 @@
 package com.github.libsml.math.linalg
 
 
+import breeze.util.ArrayUtil
 import com.github.fommil.netlib.{BLAS => NetlibBLAS, F2jBLAS}
 import com.github.fommil.netlib.BLAS.{getInstance => NativeBLAS}
 import java.util.Arrays
@@ -204,10 +205,13 @@ object BLAS extends Serializable {
 
       case _ =>
         defaultCopy(x, y)
-
     }
   }
 
+  def ncopy(x: Vector, y: Vector): Unit = {
+    zero(y)
+    axpy(-1, x, y)
+  }
 
   def euclideanNorm(vector: Vector): Double = {
 
@@ -265,4 +269,5 @@ object BLAS extends Serializable {
       }
     }
   }
+
 }

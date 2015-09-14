@@ -9,7 +9,7 @@ import com.github.libsml.math.util.VectorUtils
  * Created by huangyu on 15/8/31.
  */
 class LinearSearchFunction(val w: Vector, val f: Double, val g: Vector, val direct: Vector,
-                         val function: Function[Vector], temp: Option[Vector]) extends Function[Double] {
+                           val function: Function[Vector], temp: Option[Vector]) extends Function[Double] {
 
   private[this] var oldStep: Double = 0
   val w0: Vector = {
@@ -39,6 +39,11 @@ class LinearSearchFunction(val w: Vector, val f: Double, val g: Vector, val dire
       val fun = function.gradient(w, g)._2
       (dot(g, direct), fun)
     }
+  }
+
+  override def subGradient(w: Double, f: Double, g: Double, sg: Double): (Double, Double) = {
+    //TODO:L1 norm
+    (sg, f)
   }
 
   override def isDerivable: Boolean = function.isDerivable

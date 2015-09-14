@@ -19,9 +19,10 @@ class PlusFunction(private val first: Option[Function[Vector]], private var seco
       second.map(_.isDerivable).getOrElse(true)
   }
 
-  override def subGradient(w: linalg.Vector, f: Double, g: linalg.Vector, sg: linalg.Vector): Double = {
-    first.filter(!_.isDerivable).map(_.subGradient(w, f, g, sg)).getOrElse(0.0) +
-      second.filter(!_.isDerivable).map(_.subGradient(w, f, g, sg)).getOrElse(0.0)
+  override def subGradient(w: linalg.Vector, f: Double, g: linalg.Vector, sg: linalg.Vector): (Vector, Double) = {
+    val fun = first.filter(!_.isDerivable).map(_.subGradient(w, f, g, sg)._2).getOrElse(0.0) +
+      second.filter(!_.isDerivable).map(_.subGradient(w, f, g, sg)._2).getOrElse(0.0)
+    (sg, fun)
   }
 
   override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean = true): (Vector, Double) = {

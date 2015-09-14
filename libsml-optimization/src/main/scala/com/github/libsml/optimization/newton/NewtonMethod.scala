@@ -3,7 +3,7 @@ package com.github.libsml.optimization.newton
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg.{BLAS, Vector}
 import com.github.libsml.math.util.VectorUtils
-import com.github.libsml.optimization.linear.{LinearSearchFunction, LinerSearchParameter, LinearSearchWolf, LinearSearch}
+import com.github.libsml.optimization.linear._
 import com.github.libsml.optimization.{OptimizerResult, Optimizer}
 
 /**
@@ -19,7 +19,7 @@ class NewtonMethod extends Optimizer[Vector] {
   var _f: Double = Double.MaxValue
   var wp: Vector = _
 
-  var lineSearch: LinearSearch = new LinearSearchWolf(new LinerSearchParameter())
+  var lineSearch: LinearSearch = new LinearSearchStrongWolf(new LinerSearchParameter())
 
   var g: Vector = null
   var d: Vector = null

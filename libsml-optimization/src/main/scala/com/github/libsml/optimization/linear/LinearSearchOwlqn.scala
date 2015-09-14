@@ -1,14 +1,11 @@
 package com.github.libsml.optimization.linear
 
 import com.github.libsml.math.function.Function
-import com.github.libsml.math.linalg
-import com.github.libsml.math.linalg._
-import com.github.libsml.math.linalg.BLAS._
 
 /**
  * Created by huangyu on 15/8/26.
  */
-class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
+class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
 
   override def search(function: Function[Double], initStep: Double): (Int, Double, Double) = {
 
@@ -56,13 +53,7 @@ class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
       if (fnew > finit + step * dgtest) {
         width = dec
       } else {
-        /* Check the Wolfe condition. */
-        if (dg < param.wolfe * dginit) {
-          width = inc
-        } else {
-          return (count, fnew, step)
-        }
-
+        return (count, fnew, step)
       }
       if (step < param.minStep) {
         throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")

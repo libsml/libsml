@@ -20,7 +20,7 @@ class BayesianSmoothFunction(val clicks: Vector, val unClicks: Vector) extends F
 
   override def isDerivable: Boolean = true
 
-  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
+//  override def subGradient(w: Vector, f: Double, g: Vector, sg: Vector): Double = f
 
   override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector,Double) = {
     val alpha = w(0)

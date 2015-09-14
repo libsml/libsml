@@ -35,6 +35,19 @@ object VectorUtils {
     }
   }
 
+  def vectorType(vector: Vector): VectorType = {
+    vector match {
+      case mv: MapVector =>
+        VectorType.MAP
+      case dv: DenseVector =>
+        VectorType.DENSE
+      case sv: SparseVector =>
+        VectorType.SPARSE
+      case _ =>
+        throw new IllegalArgumentException("Unknow vector:" + vector.getClass + "!")
+    }
+  }
+
   //index:value
   def load(path: String, vector: Vector): Vector = {
     Source.fromFile(path, "utf-8").getLines().foreach(l => {

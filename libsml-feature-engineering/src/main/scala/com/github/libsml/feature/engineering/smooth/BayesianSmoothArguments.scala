@@ -67,7 +67,7 @@ class BayesianSmoothArguments(args: Array[String]) {
         "Options:\n" +
         "  -i INPUT,  --input INPUT     Input path \n" +
         "  -o OUTPUT, --output OUTPUT   Output path\n" +
-        "  -op OPTIMIZER CLASS          Optimizer class\n" +
+        "  -op OPTIMIZER CLASS          Optimizer class(default:fixedPoint)\n" +
         "  -k KEY INDEX                 Key index (default: 0)\n" +
         "  -c CLICK INDEX               Click index (default: 1)\n" +
         "  -im IMPRESSION INDEX         Impression index (default: 2)\n" +
