@@ -28,9 +28,9 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function[Vector] {
 
   override def isDerivable: Boolean = true
 
-//  override def subGradient(w: linalg.Vector, f: Double, g: linalg.Vector, sg: linalg.Vector): Double = {
-//    f
-//  }
+  //  override def subGradient(w: linalg.Vector, f: Double, g: linalg.Vector, sg: linalg.Vector): Double = {
+  //    f
+  //  }
 
   override def gradient(w: linalg.Vector, g: linalg.Vector, setZero: Boolean = true): (Vector, Double) = {
     if (setZero) {
@@ -176,26 +176,26 @@ class DirichletMultinomial(val data: Array[Vector]) extends Function[Vector] {
     val weight = Vector(Array.fill(K)(1.0))
     K match {
       case 2 =>
-//        var sumP1: Double = 0
-//        var sumP2: Double = 0
-//        var sumP1_2: Double = 0
-//        var sumP2_2: Double = 0
-//        sums.foreachNoZero((i, v) => {
-//          var tmp = data(0)(i) / v
-//          sumP1 += tmp
-//          sumP1_2 += tmp * tmp
-//          tmp = data(1)(i) / v
-//          sumP2 += tmp
-//          sumP2_2 += tmp * tmp
-//        })
-//        val p1 = sumP1 / N
-//        val p2 = sumP2 / N
-//        val p1_2 = sumP1_2 / N
-//        val p2_2 = sumP2_2 / N
-//
-//        val sumAlpha = ((p1 - p1_2) / (p1_2 - p1 * p1))
-//        weight(0) = sumAlpha * p1
-//        weight(1) = sumAlpha - weight(0)
+      //        var sumP1: Double = 0
+      //        var sumP2: Double = 0
+      //        var sumP1_2: Double = 0
+      //        var sumP2_2: Double = 0
+      //        sums.foreachNoZero((i, v) => {
+      //          var tmp = data(0)(i) / v
+      //          sumP1 += tmp
+      //          sumP1_2 += tmp * tmp
+      //          tmp = data(1)(i) / v
+      //          sumP2 += tmp
+      //          sumP2_2 += tmp * tmp
+      //        })
+      //        val p1 = sumP1 / N
+      //        val p2 = sumP2 / N
+      //        val p1_2 = sumP1_2 / N
+      //        val p2_2 = sumP2_2 / N
+      //
+      //        val sumAlpha = ((p1 - p1_2) / (p1_2 - p1 * p1))
+      //        weight(0) = sumAlpha * p1
+      //        weight(1) = sumAlpha - weight(0)
       case _ =>
     }
     weight

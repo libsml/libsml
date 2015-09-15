@@ -9,6 +9,8 @@ import com.github.libsml.math.linalg.Vector
 trait DirectSearch {
 
   def direct(d: Vector, x: Vector, xp: Vector, g: Vector, gp: Vector, sg: Option[Vector] = None): Vector
+
+  def clear()
 }
 
 
@@ -20,7 +22,7 @@ object DirectSearch {
       case "single" =>
         new SingleDirectSearch(m)
       case "spark" =>
-      //TODO:spark direct search
+        //TODO:spark direct search
         null
       case _ =>
         throw new LibsmlException(s"Unsupported direct search type:${t}")

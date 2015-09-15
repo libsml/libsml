@@ -59,6 +59,12 @@ class SingleDirectSearch(val m: Int) extends DirectSearch {
     }
     d
   }
+
+  override def clear(): Unit = {
+    k = 1
+    end = 0
+//    lm = null
+  }
 }
 
 case class IterationData(var alpha: Double, s: Vector, y: Vector, var ys: Double)

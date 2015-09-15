@@ -1,5 +1,7 @@
 package com.github.libsml.feature.engineering.smooth
 
+import scala.collection.mutable
+
 /**
  * Created by huangyu on 15/8/24.
  */
@@ -7,11 +9,14 @@ class BayesianSmoothArguments(args: Array[String]) {
 
   var input: String = null
   var output: String = null
-  var optimizerClass: String = "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial"
+  var optimizerClass: String = "com.github.libsml.optimization.lbfgs.LBFGS"
   var keyIndex: Int = 0
   var clickIndex: Int = 1
   var impressionIndex: Int = 2
   var reduceNum: Int = 100
+
+  //argument:(--conf key=value)*
+  var confMap: mutable.Map[String, String] = new mutable.HashMap[String, String]()
 
   parse(args.toList)
 
@@ -51,6 +56,11 @@ class BayesianSmoothArguments(args: Array[String]) {
     case ("--help") :: tail =>
       printUsageAndExit(0)
 
+    case ("--conf") :: value :: tail =>
+      val ss = value.split("=")
+      confMap(ss(0)) = ss(1)
+      parse(tail)
+
     case Nil => {}
 
     case _ =>
@@ -71,6 +81,7 @@ class BayesianSmoothArguments(args: Array[String]) {
         "  -k KEY INDEX                 Key index (default: 0)\n" +
         "  -c CLICK INDEX               Click index (default: 1)\n" +
         "  -im IMPRESSION INDEX         Impression index (default: 2)\n" +
+        "  --conf key=value             configuration\n" +
         "  -r REDUCE NUMBER             Reduce number (default: 100)\n"
     )
     System.exit(exitCode)

@@ -8,16 +8,16 @@ import breeze.numerics
 object Gamma {
 
   def diGamma(_x: Double): Double = {
-    numerics.digamma(_x)
-    //        var x = _x
-    //        var r: Double = 0.0
-    //        while (x <= 5) {
-    //          r -= 1 / x
-    //          x += 1
-    //        }
-    //        val f: Double = 1.0 / (x * x)
-    //        val t: Double = f * (-1.0 / 12.0 + f * (1.0 / 120.0 + f * (-1.0 / 252.0 + f * (1.0 / 240.0 + f * (-1.0 / 132.0 + f * (691.0 / 32760.0 + f * (-1.0 / 12.0 + f * 3617.0 / 8160.0)))))))
-    //        return r + Math.log(x) - 0.5 / x + t
+        numerics.digamma(_x)
+//    var x = _x
+//    var r: Double = 0.0
+//    while (x <= 5) {
+//      r -= 1 / x
+//      x += 1
+//    }
+//    val f: Double = 1.0 / (x * x)
+//    val t: Double = f * (-1.0 / 12.0 + f * (1.0 / 120.0 + f * (-1.0 / 252.0 + f * (1.0 / 240.0 + f * (-1.0 / 132.0 + f * (691.0 / 32760.0 + f * (-1.0 / 12.0 + f * 3617.0 / 8160.0)))))))
+//    return r + Math.log(x) - 0.5 / x + t
   }
 
   def logGamma(x: Double): Double = {
@@ -37,8 +37,11 @@ object Gamma {
 
   def main(args: Array[String]) {
 
-    println(logGamma(1.4) - logGamma(1.2))
-    println(Math.log(1.2))
+    //    println(logGamma(1.4) - logGamma(1.2))
+    //    println(Math.log(1.2))
+    //    println(Double.MinValue)
+//    println(Double.MinPositiveValue)
+    println(diGamma(diGamma(0)))
     //    println(triGamma(5.0))
   }
 

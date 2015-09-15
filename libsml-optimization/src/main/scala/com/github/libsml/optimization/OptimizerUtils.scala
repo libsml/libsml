@@ -13,6 +13,7 @@ object OptimizerUtils {
     "Tron" -> "com.github.libsml.optimization.liblinear.Tron",
     "FixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial",
     "median" -> "com.github.libsml.feature.engineering.smooth.MedianDirichletMultinomial",
+    "lbfgs" -> "com.github.libsml.optimization.lbfgs.LBFGS",
     "fixedPoint" -> "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial")
 
   private[this] def fullClassName(className: String): String = {

@@ -1,9 +1,8 @@
 package com.github.libsml.feature.engineering.smooth
 
-import java.io.PrintWriter
 
 import com.github.libsml.commons.util.Logging
-import com.github.libsml.math.linalg.Vector
+import com.github.libsml.math.linalg.{BLAS, Vector}
 import com.github.libsml.model.dirichlet.DirichletMultinomial
 import com.github.libsml.optimization.OptimizerUtils
 import org.apache.spark.rdd.RDD
@@ -31,20 +30,24 @@ object SmoothScore extends Logging {
         unClicks(index) = pair._2
         index += 1
       })
-      val function = new DirichletMultinomial(Array(clicks, unClicks))
-      val optimizer = OptimizerUtils.instantiateOptimizer(optimizerClassName, function.prior(), function)
-      val alphaBeta = optimizer.optimize()._1
-      pairs._2.filter(pairs => {
-        (pairs._1 + alphaBeta(0)) / (pairs._2 + pairs._1 + alphaBeta(1) + alphaBeta(0)) > alphaBeta(0) / (alphaBeta(0) + alphaBeta(1))
-      }).map(pairs => {
-        pairs._3 + "\t" + (pairs._1 + alphaBeta(0)) / (pairs._2 + pairs._1 + alphaBeta(1) + alphaBeta(0))
-      })
+      if (BLAS.sum(clicks) == 0 || BLAS.sum(unClicks) == 0) {
+        Seq.empty[String]
+      } else {
+        val function = new DirichletMultinomial(Array(clicks, unClicks))
+        val optimizer = OptimizerUtils.instantiateOptimizer(optimizerClassName, function.prior(), function)
+        val alphaBeta = optimizer.optimize()._1
+        pairs._2.filter(ps => {
+          (ps._1 + alphaBeta(0)) / (ps._2 + ps._1 + alphaBeta(1) + alphaBeta(0)) > alphaBeta(0) / (alphaBeta(0) + alphaBeta(1))
+        }).map(ps => {
+          ps._3 + "\t" + (ps._1 + alphaBeta(0)) / (ps._2 + ps._1 + alphaBeta(1) + alphaBeta(0))
+        })
+      }
     }).saveAsTextFile(outputPath)
   }
 
   def main(args: Array[String]) {
     val argument = new BayesianSmoothArguments(args)
-    val conf = new SparkConf().setAppName("Bayesian Smooth")
+    val conf = new SparkConf().setAppName("Smooth score")
     val sc = new SparkContext(conf)
     smoothScore(sc.textFile(argument.input), argument.output,
       argument.optimizerClass, argument.keyIndex,
