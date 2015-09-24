@@ -11,8 +11,8 @@ class BayesianSmoothArguments(args: Array[String]) {
   var output: String = null
   var optimizerClass: String = "com.github.libsml.optimization.lbfgs.LBFGS"
   var keyIndex: Int = 0
-  var clickIndex: Int = 1
-  var impressionIndex: Int = 2
+  var clickIndex: Int = 2
+  var impressionIndex: Int = 3
   var reduceNum: Int = 100
 
   //argument:(--conf key=value)*

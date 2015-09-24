@@ -52,7 +52,7 @@ object BayesianSmooth extends Logging {
           } catch {
             case e: Throwable =>
               reappear(key, optimizer, function)
-              throw new LibsmlException("Gamma exception")
+              throw new LibsmlException("Bayesian smooth exception.")
           }
 
         }).filter(_.trim != "")

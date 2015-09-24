@@ -60,6 +60,6 @@ case class LinerSearchParameter(/**
                                  * the number of function and gradients evaluations per iteration for the
                                  * line search routine. The default value is 20.
                                  */
-                                var maxLinesearch: Int = 40) {
+                                var maxLinesearch: Int = 20) {
 
 }

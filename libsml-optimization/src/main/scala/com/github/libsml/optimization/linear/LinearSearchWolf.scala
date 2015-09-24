@@ -12,6 +12,8 @@ class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
 
   override def search(function: Function[Double], initStep: Double): (Int, Double, Double) = {
 
+
+
     val (dginit, finit) = function.gradient(0, 0)
 
     /* Make sure that s points to a descent direction. */
@@ -27,6 +29,18 @@ class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
     var fnew = finit
     val dec: Double = 0.5f
     val inc: Double = 2.1f
+
+    def checkState(): Unit = {
+      if (step < param.minStep) {
+        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
+      }
+      if (step > param.maxStep) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
+      }
+      if (param.maxLinesearch <= count) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
+      }
+    }
 
     var outOfBound: Boolean = false
 
@@ -49,6 +63,7 @@ class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
           dg = dgf._1
           fnew = dgf._2
           count += 1
+          checkState()
         }
         return (count, fnew, step)
       }
@@ -64,19 +79,12 @@ class LinearSearchWolf(val param: LinerSearchParameter) extends LinearSearch {
         }
 
       }
-      if (step < param.minStep) {
-        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
-      }
-      if (step > param.maxStep) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
-      }
-      if (param.maxLinesearch <= count) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
-      }
+      checkState()
       step *= width
       //      println("step:"+step)
     }
     (count, fnew, step)
+
 
   }
 }

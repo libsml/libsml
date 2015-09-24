@@ -11,4 +11,6 @@ object LoggingTest extends Logging {
     logInfo("info")
   }
 
+
+
 }

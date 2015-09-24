@@ -1,12 +1,13 @@
 package com.github.libsml.model.classification
 
 
-import LogisticRegression._
+import com.github.libsml.model.classification.LogisticRegression._
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.util.{VectorUtils, MLMath}
 import com.github.libsml.model.Model
 import com.github.libsml.math.linalg.{BLAS, Vector}
-import com.github.libsml.model.data.{DataUtils, WeightedLabeledVector, LabeledVector}
+import com.github.libsml.model.data.DataUtils
+import com.github.libsml.model.data.WeightedLabeledVector
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import com.github.libsml.commons.util.RDDFunctions._
@@ -65,9 +66,13 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
   extends Function[Vector] {
 
   def this(data: RDD[WeightedLabeledVector], map: Map[String, String]) = {
-    this(data, map.getInt("featureNumber", -1), map.getInt("classNumber", 2))
+    this(data, map.getInt("slaveNum", 1), map.getInt("featureNumber", -1), map.getInt("classNumber", 2))
   }
 
+
+  require(featureNum > 0, s"Spark logistic regression exception:featureNumber=${featureNum}")
+  require(slaveNum > 0, s"Spark logistic regression exception:slaveNum=${slaveNum}")
+  require(classNum > 0, s"Spark logistic regression exception:classNum=${classNum}")
 
   private[this] var wBroadcast: Broadcast[Vector] = null
 
@@ -77,7 +82,9 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
   //    f
   //  }
 
-  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector, Double) = {
+
+  private[this] def gradient(w: Vector, g: Vector, setZero: Boolean,
+                             slaveNum: Int, featureNum: Int, classNum: Int): (Vector, Double) = {
 
     if (setZero) {
       BLAS.zero(g)
@@ -87,8 +94,10 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
       wBroadcast.unpersist()
     }
     wBroadcast = data.sparkContext.broadcast(w)
+    val _wBroadcast = wBroadcast
+
     val (loss, gradient) = data.mapPartitions(ds => {
-      val weight = wBroadcast.value
+      val weight = _wBroadcast.value
       var loss: Double = 0
       val gradient: Vector = VectorUtils.newVectorAs(weight)
       classNum match {
@@ -112,7 +121,61 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
     (g, loss)
   }
 
+  override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector, Double) = {
+    gradient(w, g, setZero, slaveNum, featureNum, classNum)
+  }
+
   override def isDerivable: Boolean = true
+
+
+  def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean,
+                    setZero: Boolean, slaveNum: Int, featureNum: Int, classNum: Int): Unit = {
+    if (setZero) {
+      BLAS.zero(hv)
+    }
+
+    val dBroadcast = data.sparkContext.broadcast(d)
+    val _wBroadcast = wBroadcast
+    val hessianVector = {
+      classNum match {
+        case 2 =>
+          data.mapPartitions(ds => {
+            val weight = _wBroadcast.value
+            val dWeight = dBroadcast.value
+            val hv: Vector = VectorUtils.newVectorAs(weight)
+            while (ds.hasNext) {
+              val data = ds.next()
+              hessianVectorBinary(data.features, data.label, weight, dWeight, hv, dw = data.weight)
+            }
+            Seq(hv).iterator
+          }
+          ).slaveReduce((hv1, hv2) => {
+            BLAS.axpy(1, hv1, hv2)
+            hv2
+          }, slaveNum)
+        case _ =>
+          data.mapPartitions(ds => {
+            val weight = _wBroadcast.value
+            val dWeight = dBroadcast.value
+            val hv: Vector = VectorUtils.newVectorAs(weight)
+            while (ds.hasNext) {
+              val data = ds.next()
+              hessianVectorMultinomial(data.features, data.label, weight, dWeight, hv, classNum, featureNum, dw = data.weight)
+            }
+            Seq(hv).iterator
+          }
+          ).slaveReduce((hv1, hv2) => {
+            BLAS.axpy(1, hv1, hv2)
+            hv2
+          }, slaveNum)
+      }
+
+    }
+
+    BLAS.axpy(1, hessianVector, hv)
+
+
+  }
 
   /**
    * Hessian  * d
@@ -121,37 +184,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
    * @param hv Hessian  * d
    */
   override def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
-    if (setZero) {
-      BLAS.zero(hv)
-    }
-
-    val dBroadcast = data.sparkContext.broadcast(d)
-    classNum match {
-      case 2 =>
-        data.mapPartitions(ds => {
-          val weight = wBroadcast.value
-          val dWeight = dBroadcast.value
-          val hv: Vector = VectorUtils.newVectorAs(weight)
-          while (ds.hasNext) {
-            val data = ds.next()
-            hessianVectorBinary(data.features, data.label, weight, dWeight, hv, dw = data.weight)
-          }
-          Seq(hv).iterator
-        }
-        )
-      case _ =>
-        data.mapPartitions(ds => {
-          val weight = wBroadcast.value
-          val dWeight = dBroadcast.value
-          val hv: Vector = VectorUtils.newVectorAs(weight)
-          while (ds.hasNext) {
-            val data = ds.next()
-            hessianVectorMultinomial(data.features, data.label, weight, dWeight, hv, classNum, featureNum, dw = data.weight)
-          }
-          Seq(hv).iterator
-        }
-        )
-    }
+    hessianVector(w, d, hv, isUpdateHessian, setZero, slaveNum, featureNum, classNum)
 
   }
 

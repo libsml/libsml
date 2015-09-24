@@ -27,6 +27,18 @@ class LinearSearchStrongWolf(val param: LinerSearchParameter) extends LinearSear
 
     var outOfBound: Boolean = false
 
+    def checkState(): Unit = {
+      if (step < param.minStep) {
+        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
+      }
+      if (step > param.maxStep) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
+      }
+      if (param.maxLinesearch <= count) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
+      }
+    }
+
     while (true) {
 
       while (!function.isInBound(step)) {
@@ -46,6 +58,8 @@ class LinearSearchStrongWolf(val param: LinerSearchParameter) extends LinearSear
           dg = dgf._1
           fnew = dgf._2
           count += 1
+          checkState()
+
         }
         return (count, fnew, step)
       }
@@ -65,19 +79,23 @@ class LinearSearchStrongWolf(val param: LinerSearchParameter) extends LinearSear
         }
 
       }
-      if (step < param.minStep) {
-        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
-      }
-      if (step > param.maxStep) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
-      }
-      if (param.maxLinesearch <= count) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
-      }
+      //      if (step < param.minStep) {
+      //        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
+      //      }
+      //      if (step > param.maxStep) {
+      //        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
+      //      }
+      //      if (param.maxLinesearch <= count) {
+      //        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
+      //      }
+      checkState()
       step *= width
-//      println(s"step:${step},count:${count}")
+      //      println(s"step:${step},count:${count}")
     }
     (count, fnew, step)
 
+
   }
+
+
 }

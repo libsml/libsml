@@ -364,7 +364,7 @@ object FeatureProcess {
 
 case class JoinMessage(val rdd: RDD[String], val featureKey: Int, val mainKey: Int)
 
-case class FeatureGroup(val features: Vector, val length: Int) {
+case class FeatureGroup(val features: Vector, var length: Int) {
   def *(other: FeatureGroup): FeatureGroup = {
     val fs = VectorUtils.newVectorAs(features)
     features.foreachNoZero((i1, v1) => {

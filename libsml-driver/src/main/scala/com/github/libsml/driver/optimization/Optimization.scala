@@ -15,6 +15,8 @@ import com.github.libsml.driver.optimization.OptimizationMode._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.reflect.ClassTag
+
 
 /**
  * Created by huangyu on 15/9/7.
@@ -60,7 +62,15 @@ object Optimization extends Logging {
 
     val trainData = getData(sc, conf.input, conf.mapNum, conf)
 
-    val function: Function[Vector] = getFunction(trainData, conf)
+    val function: Function[Vector] = {
+      trainData match {
+        case rdd: RDD[_] =>
+          getFunction[RDD[WeightedLabeledVector]](trainData, conf)
+        case array: Array[WeightedLabeledVector] =>
+          getFunction[Array[WeightedLabeledVector]](trainData, conf)
+
+      }
+    }
 
     val model: Model[Vector, Vector] = ModelUtils.instantiateModel(conf.modelClass, prior, conf.setting)
 
@@ -86,9 +96,10 @@ object Optimization extends Logging {
     if (sc.isDefined) {
       conf.dataFormat match {
         case DataFormat.AVRO =>
-          DataUtils.loadAvroData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions)
+//          println(s"mp:${numPartitions}")
+          DataUtils.loadAvroData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).cache()
         case DataFormat.LIBSVM =>
-          DataUtils.loadSVMData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions)
+          DataUtils.loadSVMData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).cache()
       }
     } else {
       conf.dataFormat match {
@@ -122,12 +133,13 @@ object Optimization extends Logging {
 
 
   //(data,map),(data),(map),()
-  def getFunction(data: AnyRef, conf: OptimizationConf): Function[Vector] = {
+  def getFunction[T](data: AnyRef, conf: OptimizationConf)(implicit ctg: ClassTag[T]): Function[Vector] = {
 
     var function: Function[Vector] = null
     val cls = Class.forName(conf.functionClass)
+    println(data.getClass)
     try {
-      function = cls.getConstructor(data.getClass, classOf[Map[String, String]]).newInstance(data, conf.setting).
+      function = cls.getConstructor(ctg.runtimeClass, classOf[Map[String, String]]).newInstance(data, conf.setting).
         asInstanceOf[Function[Vector]]
     } catch {
       case _: NoSuchMethodException =>

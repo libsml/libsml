@@ -15,7 +15,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 object SmoothScore extends Logging {
 
   def smoothScore(data: RDD[String], outputPath: String,
-                  optimizerClassName: String = "com.github.libsml.feature.engineering.smooth.FixedPointDirichletMultinomial",
+                  optimizerClassName: String = "com.github.libsml.optimization.lbfgs.LBFGS",
                   keyIndex: Int = 0, clickIndex: Int = 1, impressionIndex: Int = 2, reduceNum: Int = 100): Unit = {
 
     data.map(line => {

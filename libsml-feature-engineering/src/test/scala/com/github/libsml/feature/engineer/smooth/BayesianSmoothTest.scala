@@ -65,11 +65,12 @@ object BayesianSmoothTest {
 
   def medianSmoothTest() = {
     //    val n: Int = 3265
-    val n: Int = 3076
+    //    val n: Int = 3076
+    //    val n: Int = 2714
     val clicks: Vector = Vector()
     val unClicks: Vector = Vector()
     var index: Int = 0
-    Source.fromFile("data/data_6001984662548164714", "utf-8").getLines().foreach(line => {
+    Source.fromFile("data/t", "utf-8").getLines().foreach(line => {
       val ss = line.split("\\s+")
       clicks(index) = ss(2).toDouble
       unClicks(index) = ss(3).toDouble - clicks(index)
@@ -77,19 +78,39 @@ object BayesianSmoothTest {
     })
 
     val fun = new DirichletMultinomial(Array(clicks, unClicks))
+    //    val fun = new DirichletMultinomial(Array(Vector(Array(0.0,0.0,0.0)), Vector(Array(0.0,0.0,0.0))))
 
     val start = System.currentTimeMillis()
-//            val optimizer: Optimizer[Vector] = new MedianDirichletMultinomial(fun)
-            val optimizer: Optimizer[Vector] = new FixedPointDirichletMultinomial(fun)
-//    val optimizer: Optimizer[Vector] = new LBFGS(Vector(Array(1.0, 1.0)), fun)
+    val optimizer: Optimizer[Vector] = new MedianDirichletMultinomial(fun)
+    //            val optimizer: Optimizer[Vector] = new FixedPointDirichletMultinomial(fun)
+    //    val optimizer = new LBFGS(Vector(Array(1.0, 1.0)), fun)
+    //    val optimizer = OptimizerUtils.instantiateOptimizer("lbfgs", fun.prior(), Map[String, String]("linearSearch.maxLinesearch" -> "14"
+    //      , "lbfgs.maxIterations" -> "30"), fun)
+    //    optimizer.prior(fun.prior())
+    //    optimizer.setFunction(fun)
 
     //    optimizer.setFunction(fun)
-//    for (r <- optimizer) {
-//      println(r.w)
-//    }
-    println(s"init:${System.currentTimeMillis() - start}")
-    println(optimizer.optimize()._1)
-    println(s"pass:${System.currentTimeMillis() - start}")
+    for (r <- optimizer) {
+      println(r)
+      //      println(r.w)
+      //      println("g:" + r.g)
+      //      println("f:" + r.f.get)
+      //      println(s"d:${optimizer.d}")
+      //      println(s"${r}")
+    }
+
+    //    println("****")
+    //    optimizer.prior(fun.prior())
+    //    optimizer.setFunction(fun)
+    //    for (r <- optimizer) {
+    //      println(r.w)
+    //      println("g:" + r.g)
+    //      println("f:" + r.f.get)
+    //      //      println(s"${r}")
+    //    }
+    //    println(s"init:${System.currentTimeMillis() - start}")
+    //    println(optimizer.optimize()._1)
+    //    println(s"pass:${System.currentTimeMillis() - start}")
 
   }
 
@@ -109,7 +130,7 @@ object BayesianSmoothTest {
     val data = Array(clicks, unClicks)
 
     val fun: DirichletMultinomial = new DirichletMultinomial(data)
-    val optimizer: Optimizer[Vector] = new LBFGS(Vector(Array(1.0, 1.0)), fun)
+    val optimizer: Optimizer[Vector] = new LBFGS(Vector(Array(-1.0, 0.0)), fun)
     //        val optimizer: Optimizer[Vector] = new NewtonMethod(fun, Vector(Array(0.5677, 8.839)))
     //        val optimizer: Optimizer[Vector] = new NewtonMethod(fun, Vector(Array(1.0, 1.0)))
     //    val optimizer: Optimizer[Vector] = new NewtonMethod(fun, fun.prior())

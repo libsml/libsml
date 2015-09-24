@@ -27,6 +27,18 @@ class LinearSearchArmijo(val param: LinerSearchParameter) extends LinearSearch {
 
     var outOfBound: Boolean = false
 
+    def checkState(): Unit = {
+      if (step < param.minStep) {
+        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
+      }
+      if (step > param.maxStep) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
+      }
+      if (param.maxLinesearch <= count) {
+        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
+      }
+    }
+
     while (true) {
 
       while (!function.isInBound(step)) {
@@ -46,6 +58,7 @@ class LinearSearchArmijo(val param: LinerSearchParameter) extends LinearSearch {
           dg = dgf._1
           fnew = dgf._2
           count += 1
+          checkState()
         }
         return (count, fnew, step)
       }
@@ -55,19 +68,13 @@ class LinearSearchArmijo(val param: LinerSearchParameter) extends LinearSearch {
       } else {
         return (count, fnew, step)
       }
-      if (step < param.minStep) {
-        throw new LinearSearchException("LBFGSERR_MINIMUMSTEP")
-      }
-      if (step > param.maxStep) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMSTEP")
-      }
-      if (param.maxLinesearch <= count) {
-        throw new LinearSearchException("LBFGSERR_MAXIMUMLINESEARCH")
-      }
+      checkState()
       step *= width
       //      println("step:"+step)
     }
     (count, fnew, step)
+
+
 
   }
 }
