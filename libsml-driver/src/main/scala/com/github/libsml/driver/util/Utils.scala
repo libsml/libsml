@@ -17,14 +17,14 @@ object Utils {
       println("Usage:avro2text [parameter*]")
     }
 
-    if (args.length <= 1) {
+    if (args.length < 1) {
       printHelp()
       System.exit(1)
     }
 
     args(0) match {
       case "avro2text" =>
-        if (args.length <= 3) {
+        if (args.length < 3) {
           println("Usage:avro2text avroPath textPath")
           System.exit(1)
         }
