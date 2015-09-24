@@ -4,7 +4,7 @@ import java.io.{InputStream, FileInputStream}
 import java.util.Properties
 
 import com.github.libsml.commons.LibsmlException
-import com.github.libsml.commons.util.Logging
+import com.github.libsml.commons.util.{Utils, Logging}
 import com.github.libsml.driver.optimization.OptimizationMode._
 import com.github.libsml.math.linalg.VectorType
 import com.github.libsml.model.data.DataFormat
@@ -42,7 +42,7 @@ class OptimizationConf() extends Logging {
 
   def testInput: Option[String] = setting.get("testInput")
 
-//  def testOutput: Option[String] = setting.get("testOutput")
+  //  def testOutput: Option[String] = setting.get("testOutput")
 
   def logFile: Option[String] = setting.get("logFile")
 
@@ -112,13 +112,20 @@ class OptimizationConf() extends Logging {
     arrayBuffer.toArray
   }
 
-  def saveFrequency: Int = setting.getInt("saveFrequency", 0)
+  def saveFrequency: Int = setting.getInt("saveFrequency", 1)
 
   def overWrite: Boolean = setting.getBoolean("overWrite", true)
 
-  def evaluateFrequency: Int = setting.getInt("evaluateFrequency", 0)
+  def evaluateFrequency: Int = setting.getInt("evaluateFrequency", 1)
 
-  def iterationSaveOut: Option[String] = if (saveFrequency > 0) Some(output + "/model") else None
+  def iterationSaveOut: Option[String] = {
+    if (saveFrequency > 0) {
+      Utils.mkdirs(output + "/model", true)
+      Some(output + "/model")
+    } else {
+      None
+    }
+  }
 
   def mode: Mode = {
     setting.getOrElse("mode", "spark").trim match {

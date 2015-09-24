@@ -39,13 +39,13 @@ class DefaultOptimizationAlgorithm(
       model.update(it.w)
 
 
-      if (iter - oldSaveIt >= saveFrequency) {
+      if (saveFrequency > 0 && iter - oldSaveIt >= saveFrequency) {
         iterationResultFile.foreach(f => model.save(f + "/" + iter))
         oldSaveIt = iter
       }
 
 
-      if (iter - oldEvaluatorIt >= evaluateFrequency) {
+      if (evaluateFrequency > 0 && iter - oldEvaluatorIt >= evaluateFrequency) {
         evaluator.foreach(e => {
           out.print("Iteration %d evaluator starts at time %s:\n".
             format(iter, Utils.currentTime()))

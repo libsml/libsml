@@ -137,7 +137,7 @@ object Optimization extends Logging {
 
     var function: Function[Vector] = null
     val cls = Class.forName(conf.functionClass)
-    println(data.getClass)
+//    println(data.getClass)
     try {
       function = cls.getConstructor(ctg.runtimeClass, classOf[Map[String, String]]).newInstance(data, conf.setting).
         asInstanceOf[Function[Vector]]

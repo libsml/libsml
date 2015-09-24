@@ -31,11 +31,26 @@ object Utils extends Logging {
     fullClassName.substring(fullClassName.lastIndexOf('.') + 1)
   }
 
+  def delete(file: File):Unit = {
+    if (file.exists()) {
+      if (file.isFile) {
+        file.delete()
+      } else if (file.isDirectory) {
+        val fs = file.listFiles()
+        for (f <- fs) {
+          delete(f)
+        }
+        file.delete()
+      }
+    }
+  }
+
   def mkdirs(path: String, overWrite: Boolean) = {
     val f = new File(path)
     if (overWrite) {
       if (f.exists()) {
-        f.delete()
+        //        f.delete()
+        delete(f)
       }
     }
     if (f.exists()) {
@@ -92,7 +107,7 @@ object Utils extends Logging {
   }
 
   def main(args: Array[String]) = {
-    println(diffDays("20150101","20150202"))
+    println(diffDays("20150101", "20150202"))
   }
 
 }
