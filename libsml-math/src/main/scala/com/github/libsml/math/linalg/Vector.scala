@@ -53,7 +53,7 @@ sealed trait Vector extends Serializable {
   }
 
   override def hashCode(): Int = {
-    var result: Int = size + 31
+    var result: Int = noZeroSize + 31
     this.foreachNoZero { case (index, value) =>
       result = 31 * result + index
       // refer to {@link java.util.Arrays.equals} for hash algorithm

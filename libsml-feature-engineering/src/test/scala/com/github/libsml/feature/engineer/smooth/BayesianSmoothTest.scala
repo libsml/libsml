@@ -70,10 +70,10 @@ object BayesianSmoothTest {
     val clicks: Vector = Vector()
     val unClicks: Vector = Vector()
     var index: Int = 0
-    Source.fromFile("data/t", "utf-8").getLines().foreach(line => {
+    Source.fromFile("data/word_test", "utf-8").getLines().foreach(line => {
       val ss = line.split("\\s+")
       clicks(index) = ss(2).toDouble
-      unClicks(index) = ss(3).toDouble - clicks(index)
+      unClicks(index) = ss(4).toDouble - clicks(index)
       index += 1
     })
 
@@ -81,11 +81,11 @@ object BayesianSmoothTest {
     //    val fun = new DirichletMultinomial(Array(Vector(Array(0.0,0.0,0.0)), Vector(Array(0.0,0.0,0.0))))
 
     val start = System.currentTimeMillis()
-    val optimizer: Optimizer[Vector] = new MedianDirichletMultinomial(fun)
+    //    val optimizer: Optimizer[Vector] = new MedianDirichletMultinomial(fun)
     //            val optimizer: Optimizer[Vector] = new FixedPointDirichletMultinomial(fun)
     //    val optimizer = new LBFGS(Vector(Array(1.0, 1.0)), fun)
-    //    val optimizer = OptimizerUtils.instantiateOptimizer("lbfgs", fun.prior(), Map[String, String]("linearSearch.maxLinesearch" -> "14"
-    //      , "lbfgs.maxIterations" -> "30"), fun)
+    val optimizer = OptimizerUtils.instantiateOptimizer("lbfgs", fun.prior(), Map[String, String]("linearSearch.maxLinesearch" -> "14"
+      , "lbfgs.maxIterations" -> "30"), fun)
     //    optimizer.prior(fun.prior())
     //    optimizer.setFunction(fun)
 

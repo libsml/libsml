@@ -53,6 +53,7 @@ class BayesianSmoothArguments(args: Array[String]) {
       reduceNum = value.toInt
       parse(tail)
 
+
     case ("--help") :: tail =>
       printUsageAndExit(0)
 

@@ -31,7 +31,7 @@ object Utils extends Logging {
     fullClassName.substring(fullClassName.lastIndexOf('.') + 1)
   }
 
-  def delete(file: File):Unit = {
+  def delete(file: File): Unit = {
     if (file.exists()) {
       if (file.isFile) {
         file.delete()
@@ -107,7 +107,8 @@ object Utils extends Logging {
   }
 
   def main(args: Array[String]) = {
-    println(diffDays("20150101", "20150202"))
+    //    println(diffDays("20150101", "20150202"))
+    println(Integer.numberOfTrailingZeros(Integer.highestOneBit(7)))
   }
 
 }

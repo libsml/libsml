@@ -22,8 +22,14 @@ object BayesianSmooth extends Logging {
              reduceNum: Int = 100, map: Map[String, String] = Map()): Unit = {
 
     data.map(line => {
-      val ss = line.split("\\s+")
-      (ss(keyIndex), (ss(clickIndex).toDouble, ss(impressionIndex).toDouble - ss(clickIndex).toDouble))
+      val ss = line.split("\t")
+      try {
+        (ss(keyIndex), (ss(clickIndex).toDouble, ss(impressionIndex).toDouble - ss(clickIndex).toDouble))
+      } catch {
+        case e: Throwable =>
+          logError(s"Smooth exception:${line}")
+          throw new LibsmlException(line, e)
+      }
     }).groupByKey(reduceNum).mapPartitions(its => {
       var optimizer: Optimizer[Vector] = null
       its.map(

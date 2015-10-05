@@ -1,10 +1,10 @@
 #mode=spark
 mode=local
-input=./data/a9a.txt
+input=./data/a9a_train.txt
 #input=./data/part-00784.avro
 output=./result/test
 #testInput=./data/part-00784.avro
-testInput=./data/a9a.txt
+testInput=./data/a9a_test.txt
 logFile=./log/optimization.log
 #functionClass=SparkLogisticRegression
 functionClass=SingleLogisticRegression
