@@ -13,5 +13,5 @@ result/
 log/
 .idea
 */target
-data/
+dataset/
 libsml-feature-selection/
