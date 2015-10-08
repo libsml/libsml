@@ -80,7 +80,7 @@ class MedianDirichletMultinomial(_function: Function[Vector]) extends Optimizer[
 
     var i = 0
     while (i < kSum.length) {
-      weight(i) = kSum(i) / sumSum * m
+      weight(i) = if (m == 0) 0 else kSum(i) / sumSum * m
       i += 1
     }
     new OptimizerResult(weight)
