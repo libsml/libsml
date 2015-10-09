@@ -13,8 +13,6 @@
 
     <modules>
         <module>commons</module>
-        <module>libsml-super</module>
-        <module>libsml-liblinear</module>
         <module>libsml-lbfgs</module>
         <module>libsml-driver</module>
         <module>libsml-math</module>
@@ -157,7 +155,6 @@
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.7.10</version>
             </dependency>
-
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
@@ -209,6 +206,26 @@
 
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../src/conf</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
+
         <pluginManagement>
             <plugins>
                 <plugin>
