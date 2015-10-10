@@ -8,9 +8,8 @@ import org.apache.spark.rdd.RDD
  */
 class VectorRDDFunctions(self: RDD[Vector]) {
 
-  def add(numReduce: Int): Vector = {
-
-    null
+  def add(numReduce: Int, vector: Vector): Unit = {
+    self.toLocalIterator
   }
 
 }
