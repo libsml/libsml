@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import com.github.libsml.commons.LibsmlException
-
 import scala.util.control.NonFatal
 
 

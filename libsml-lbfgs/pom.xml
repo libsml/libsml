@@ -13,35 +13,6 @@
     <name>libsml-lbfgs</name>
     <packaging>jar</packaging>
 
-    <build>
-        <plugins>
-
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.github.libsml.lbfgs.LBFGSMain</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>assemble-all</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -49,14 +20,6 @@
         </dependency>
         <dependency>
             <artifactId>commons</artifactId>
-            <groupId>${project.groupId}</groupId>
-        </dependency>
-        <dependency>
-            <artifactId>libsml-super</artifactId>
-            <groupId>${project.groupId}</groupId>
-        </dependency>
-        <dependency>
-            <artifactId>libsml-liblinear</artifactId>
             <groupId>${project.groupId}</groupId>
         </dependency>
         <dependency>

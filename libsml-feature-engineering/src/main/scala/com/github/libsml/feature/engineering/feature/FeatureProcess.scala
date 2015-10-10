@@ -2,17 +2,17 @@ package com.github.libsml.feature.engineering.feature
 
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.math.util.VectorUtils
-import org.apache.avro.generic.{GenericRecord, GenericData}
+import com.github.libsml.model.data.avro.Scheme
+import org.apache.avro.generic.{GenericData, GenericRecord}
 import org.apache.avro.mapred.{AvroJob, AvroOutputFormat, AvroWrapper}
 import org.apache.hadoop.io.NullWritable
-import com.github.libsml.model.data.avro.Scheme
 import org.apache.hadoop.mapred.JobConf
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.{SparkConf, SparkContext}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
-import scala.collection.mutable
 
 /**
  * Created by huangyu on 15/8/31.
@@ -370,6 +370,7 @@ case class FeatureGroup(val features: Vector, var length: Int) {
     features.foreachNoZero((i1, v1) => {
       other.features.foreachNoZero((i2, v2) => {
         fs(i1 * length + i2) = v1 * v2
+//        System.out.println(s"i1:${i1},i2:${i2},l1:${length},l2:${other.length},i:${i1 * length + i2},l:${length * other.length}");
       })
     })
     FeatureGroup(fs, length * other.length)

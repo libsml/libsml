@@ -47,16 +47,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <artifactId>libsml-super</artifactId>
-                <groupId>${project.groupId}</groupId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <artifactId>libsml-liblinear</artifactId>
-                <groupId>${project.groupId}</groupId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <artifactId>libsml-lbfgs</artifactId>
                 <groupId>${project.groupId}</groupId>
                 <version>${project.version}</version>

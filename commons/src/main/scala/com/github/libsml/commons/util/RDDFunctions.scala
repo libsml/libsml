@@ -28,6 +28,7 @@ class RDDFunctions[T: ClassTag](self: RDD[T]) {
     }
     rdd.reduce(f)
   }
+
 }
 
 object RDDFunctions {
