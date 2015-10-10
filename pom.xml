@@ -13,7 +13,7 @@
 
     <modules>
         <module>commons</module>
-        <module>libsml-lbfgs</module>
+        <!--<module>libsml-lbfgs</module>-->
         <module>libsml-driver</module>
         <module>libsml-math</module>
         <module>libsml-optimization</module>
