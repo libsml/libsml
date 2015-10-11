@@ -61,7 +61,7 @@ class LogisticRegressionModel(var w: Vector) extends Model[Vector, Vector] {
 }
 
 
-class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int,
+class LogisticRegression(val data: RDD[WeightedLabeledVector], val reduceNum: Int,
                          val featureNum: Int = -1, val classNum: Int = 2)
   extends Function[Vector] {
 
@@ -71,8 +71,8 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
 
 
   require(featureNum > 0, s"Spark logistic regression exception:featureNumber=${featureNum}")
-  require(slaveNum > 0, s"Spark logistic regression exception:slaveNum=${slaveNum}")
-  require(classNum > 0, s"Spark logistic regression exception:classNum=${classNum}")
+  require(reduceNum > 0, s"Spark logistic regression exception:reduceNumber=${reduceNum}")
+  require(classNum > 0, s"Spark logistic regression exception:classNumber=${classNum}")
 
   private[this] var wBroadcast: Broadcast[Vector] = null
 
@@ -84,7 +84,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
 
 
   private[this] def gradient(w: Vector, g: Vector, setZero: Boolean,
-                             slaveNum: Int, featureNum: Int, classNum: Int): (Vector, Double) = {
+                             reduceNum: Int, featureNum: Int, classNum: Int): (Vector, Double) = {
 
     if (setZero) {
       BLAS.zero(g)
@@ -96,7 +96,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
     wBroadcast = data.sparkContext.broadcast(w)
     val _wBroadcast = wBroadcast
 
-    val (loss, gradient) = data.mapPartitions(ds => {
+    val rdd = data.mapPartitions(ds => {
       val weight = _wBroadcast.value
       var loss: Double = 0
       val gradient: Vector = VectorUtils.newVectorAs(weight)
@@ -112,24 +112,29 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
             loss += gradientMultinomial(d.features, d.label, weight, gradient, classNum, featureNum, d.weight)
           }
       }
-      Seq((loss, gradient)).iterator
-    }).slaveReduce((lossGradient1, lossGradient2) => {
-      BLAS.axpy(1, lossGradient1._2, lossGradient2._2)
-      (lossGradient1._1 + lossGradient2._1, lossGradient2._2)
-    }, slaveNum)
-    BLAS.axpy(1, gradient, g)
+      //      Seq((loss, gradient)).iterator
+      VectorUtils.vectorWithAttachIterator(gradient, loss)
+    }).reduceByKey(_ + _, reduceNum).persist()
+    //      slaveReduce((lossGradient1, lossGradient2) => {
+    //      BLAS.axpy(1, lossGradient1._2, lossGradient2._2)
+    //      (lossGradient1._1 + lossGradient2._1, lossGradient2._2)
+    //    }, slaveNum)
+    val loss = getVectorFromRdd(g, rdd)
+    rdd.unpersist()
+
+    //    BLAS.axpy(1, gradient, g)
     (g, loss)
   }
 
   override def gradient(w: Vector, g: Vector, setZero: Boolean): (Vector, Double) = {
-    gradient(w, g, setZero, slaveNum, featureNum, classNum)
+    gradient(w, g, setZero, reduceNum, featureNum, classNum)
   }
 
   override def isDerivable: Boolean = true
 
 
   def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean,
-                    setZero: Boolean, slaveNum: Int, featureNum: Int, classNum: Int): Unit = {
+                    setZero: Boolean, reduceNum: Int, featureNum: Int, classNum: Int): Unit = {
     if (setZero) {
       BLAS.zero(hv)
     }
@@ -139,7 +144,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
     val hessianVector = {
       classNum match {
         case 2 =>
-          data.mapPartitions(ds => {
+          val rdd = data.mapPartitions(ds => {
             val weight = _wBroadcast.value
             val dWeight = dBroadcast.value
             val hv: Vector = VectorUtils.newVectorAs(weight)
@@ -147,14 +152,19 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
               val data = ds.next()
               hessianVectorBinary(data.features, data.label, weight, dWeight, hv, dw = data.weight)
             }
-            Seq(hv).iterator
+            //            Seq(hv).iterator
+            VectorUtils.vectorIterator(hv)
           }
-          ).slaveReduce((hv1, hv2) => {
-            BLAS.axpy(1, hv1, hv2)
-            hv2
-          }, slaveNum)
+          ).reduceByKey(_ + _, reduceNum).persist()
+          getVectorFromRdd(hv, rdd)
+          rdd.unpersist()
+          hv
+        //            .slaveReduce((hv1, hv2) => {
+        //            BLAS.axpy(1, hv1, hv2)
+        //            hv2
+        //          }, slaveNum)
         case _ =>
-          data.mapPartitions(ds => {
+          val rdd = data.mapPartitions(ds => {
             val weight = _wBroadcast.value
             val dWeight = dBroadcast.value
             val hv: Vector = VectorUtils.newVectorAs(weight)
@@ -162,12 +172,17 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
               val data = ds.next()
               hessianVectorMultinomial(data.features, data.label, weight, dWeight, hv, classNum, featureNum, dw = data.weight)
             }
-            Seq(hv).iterator
+            //            Seq(hv).iterator
+            VectorUtils.vectorIterator(hv)
           }
-          ).slaveReduce((hv1, hv2) => {
-            BLAS.axpy(1, hv1, hv2)
-            hv2
-          }, slaveNum)
+          ).persist()
+          getVectorFromRdd(hv, rdd)
+          rdd.unpersist()
+          hv
+        //            .slaveReduce((hv1, hv2) => {
+        //            BLAS.axpy(1, hv1, hv2)
+        //            hv2
+        //          }, reduceNum)
       }
 
     }
@@ -184,7 +199,7 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val slaveNum: Int
    * @param hv Hessian  * d
    */
   override def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
-    hessianVector(w, d, hv, isUpdateHessian, setZero, slaveNum, featureNum, classNum)
+    hessianVector(w, d, hv, isUpdateHessian, setZero, reduceNum, featureNum, classNum)
 
   }
 
@@ -513,6 +528,19 @@ object LogisticRegression {
     }
 
 
+  }
+
+  def getVectorFromRdd(vector: Vector, rdd: RDD[(Int, Double)]): Double = {
+    var attach: Double = 0
+    BLAS.zero(vector)
+    rdd.toLocalIterator.foreach(kv => {
+      if (kv._1 == -1) {
+        attach = kv._2
+      } else {
+        vector(kv._1) = _ + kv._2
+      }
+    })
+    attach
   }
 
 

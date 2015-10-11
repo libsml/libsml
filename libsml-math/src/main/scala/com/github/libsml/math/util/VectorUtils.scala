@@ -1,5 +1,6 @@
 package com.github.libsml.math.util
 
+import com.github.libsml.commons.LibsmlException
 import com.github.libsml.math.linalg.VectorType.VectorType
 import com.github.libsml.math.linalg._
 
@@ -55,6 +56,92 @@ object VectorUtils {
       vector(ss(0).trim.toInt) = ss(1).trim.toDouble
     })
     vector
+  }
+
+  def vectorWithAttachIterator(vector: Vector, attach: Double): Iterator[(Int, Double)] = {
+    val vi = vectorIterator(vector)
+    new Iterator[(Int, Double)] {
+      var isAttach = true
+
+      override def hasNext: Boolean = isAttach || vi.hasNext
+
+      override def next(): (Int, Double) = {
+        val re = if (isAttach) (-1, attach) else vi.next
+        isAttach = false
+        re
+      }
+    }
+  }
+
+
+  def vectorIterator(vector: Vector): Iterator[(Int, Double)] = {
+
+
+    def nextIndex(index: Int, length: Int, values: Array[Double]): Int = {
+      var i = index
+      while (i < length && (values(i) == 0)) {
+        i += 1
+      }
+      i
+    }
+
+    def mapVectorIterator(mapVector: MapVector): Iterator[(Int, Double)] = {
+
+      new Iterator[(Int, Double)] {
+
+        var index = nextIndex(0, mapVector.values.length, mapVector.values)
+
+        override def hasNext: Boolean = index < mapVector.table.length
+
+        override def next(): (Int, Double) = {
+          val v = (mapVector.table(index), mapVector.values(index))
+          index = nextIndex(index + 1, mapVector.table.length, mapVector.values)
+          v
+        }
+      }
+    }
+
+    def sparseVectorIterator(sparseVector: SparseVector): Iterator[(Int, Double)] = {
+      new Iterator[(Int, Double)] {
+
+        var index = nextIndex(0, sparseVector.values.length, sparseVector.values)
+
+        override def hasNext: Boolean = index < sparseVector.indices.length
+
+        override def next(): (Int, Double) = {
+          val v = (sparseVector.indices(index), sparseVector.values(index))
+          index = nextIndex(index + 1, sparseVector.values.length, sparseVector.values)
+          v
+        }
+      }
+    }
+
+    def denseVectorIterator(denseVector: DenseVector): Iterator[(Int, Double)] = {
+      new Iterator[(Int, Double)] {
+        var index = nextIndex(0, denseVector.values.length, denseVector.values)
+
+        override def hasNext: Boolean = index < denseVector.values.length
+
+        override def next(): (Int, Double) = {
+          val v = (index, denseVector.values(index))
+          index = nextIndex(index + 1, denseVector.values.length, denseVector.values)
+          v
+        }
+      }
+    }
+
+    vector match {
+      case mv: MapVector =>
+        mapVectorIterator(mv)
+      case dv: DenseVector =>
+        denseVectorIterator(dv)
+      case sv: SparseVector =>
+        sparseVectorIterator(sv)
+      case _ =>
+        throw new LibsmlException("Unknow vector:" + vector.getClass + "!")
+    }
+
+
   }
 
 }
