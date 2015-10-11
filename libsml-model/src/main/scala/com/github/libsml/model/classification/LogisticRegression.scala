@@ -534,20 +534,31 @@ object LogisticRegression {
     val rddc = if (rdd.partitions.length < 200) rdd else rdd.coalesce(100)
     //    BLAS.zero(vector)
 
-    val parts = rddc.partitions
-    for (p <- parts) {
-      val idx = p.index
-      val partRdd = rddc.mapPartitionsWithIndex((index, it) => if (index == idx) it else Iterator[(Int, Double)](), true)
-      val dataPartitioned = partRdd.collect
-      var i: Int = 0
-      while (i < dataPartitioned.length) {
-        if (dataPartitioned(i)._1 == -1) {
-          attach = dataPartitioned(i)._2
-        } else {
-          vector(dataPartitioned(i)._1) = dataPartitioned(i)._2
-        }
-        i += 1
+    //    val parts = rddc.partitions
+    //    for (p <- parts) {
+    //      val idx = p.index
+    //      val partRdd = rddc.mapPartitionsWithIndex((index, it) => if (index == idx) it else Iterator[(Int, Double)](), true)
+    //      val dataPartitioned = partRdd.collect
+    //      var i: Int = 0
+    //      while (i < dataPartitioned.length) {
+    //        if (dataPartitioned(i)._1 == -1) {
+    //          attach = dataPartitioned(i)._2
+    //        } else {
+    //          vector(dataPartitioned(i)._1) = dataPartitioned(i)._2
+    //        }
+    //        i += 1
+    //      }
+    //    }
+
+    val a = rddc.collect()
+    var i = 0
+    while (i < a.length) {
+      if (a(i)._1 == -1) {
+        attach = a(i)._2
+      } else {
+        vector(i) = a(i)._2
       }
+      i += 1
     }
 
     //    rddc.collect().foreach(kv => {
