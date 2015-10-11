@@ -57,10 +57,6 @@
             <groupId>${project.groupId}</groupId>
         </dependency>
         <dependency>
-            <artifactId>libsml-lbfgs</artifactId>
-            <groupId>${project.groupId}</groupId>
-        </dependency>
-        <dependency>
             <artifactId>libsml-optimization</artifactId>
             <groupId>${project.groupId}</groupId>
         </dependency>

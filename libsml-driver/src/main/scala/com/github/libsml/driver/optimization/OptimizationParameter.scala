@@ -202,7 +202,7 @@ class OptimizationParameter(args: Array[String]) {
       parse(tail)
 
     case ("--testReduceNumber" | "-tr") :: value :: tail =>
-      reduceNum = value.toInt
+      testReduceNum = value.toInt
       parse(tail)
 
     case ("--mode") :: value :: tail =>

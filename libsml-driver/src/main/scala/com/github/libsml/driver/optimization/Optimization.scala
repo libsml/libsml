@@ -96,10 +96,10 @@ object Optimization extends Logging {
     if (sc.isDefined) {
       conf.dataFormat match {
         case DataFormat.AVRO =>
-//          println(s"mp:${numPartitions}")
-          DataUtils.loadAvroData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).cache()
+          //          println(s"mp:${numPartitions}")
+          DataUtils.loadAvroData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).coalesce(numPartitions).cache()
         case DataFormat.LIBSVM =>
-          DataUtils.loadSVMData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).cache()
+          DataUtils.loadSVMData2RDD(sc.get, conf.bias, conf.featureNum, path, numPartitions).coalesce(numPartitions).cache()
       }
     } else {
       conf.dataFormat match {
@@ -137,7 +137,7 @@ object Optimization extends Logging {
 
     var function: Function[Vector] = null
     val cls = Class.forName(conf.functionClass)
-//    println(data.getClass)
+    //    println(data.getClass)
     try {
       function = cls.getConstructor(ctg.runtimeClass, classOf[Map[String, String]]).newInstance(data, conf.setting).
         asInstanceOf[Function[Vector]]
