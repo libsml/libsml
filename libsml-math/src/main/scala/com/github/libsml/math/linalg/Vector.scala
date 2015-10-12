@@ -3,7 +3,7 @@ package com.github.libsml.math.linalg
 import java.io.PrintWriter
 import java.util
 
-import com.github.libsml.math.util.{HashFunctions, PrimeFinder}
+import com.github.libsml.math.util.{HashFunctions, PrimeFinder, VectorUtils}
 
 import scala.util.Random
 
@@ -50,6 +50,26 @@ sealed trait Vector extends Serializable {
       }
       case _ => false
     }
+  }
+
+  def *(vector: Vector) = BLAS.dot(this, vector)
+
+  def +=(vector: Vector) = BLAS.axpy(1, vector, this)
+
+  def +(vector: Vector) = {
+    val v = VectorUtils.newVectorAs(this)
+    BLAS.copy(this, v)
+    BLAS.axpy(1, vector, v)
+    v
+  }
+
+  def -=(vector: Vector) = BLAS.axpy(-1, vector, this)
+
+  def -(vector: Vector) = {
+    val v = VectorUtils.newVectorAs(this)
+    BLAS.copy(this, v)
+    BLAS.axpy(-1, vector, v)
+    v
   }
 
   override def hashCode(): Int = {
