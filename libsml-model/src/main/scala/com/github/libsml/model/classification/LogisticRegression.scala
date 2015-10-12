@@ -10,7 +10,6 @@ import com.github.libsml.model.data.DataUtils
 import com.github.libsml.model.data.WeightedLabeledVector
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import com.github.libsml.commons.util.RDDFunctions._
 import com.github.libsml.commons.util.MapWrapper._
 
 /**

@@ -1,7 +1,6 @@
 package com.github.libsml.math.linalg
 
 
-import breeze.util.ArrayUtil
 import com.github.fommil.netlib.{BLAS => NetlibBLAS, F2jBLAS}
 import com.github.fommil.netlib.BLAS.{getInstance => NativeBLAS}
 import java.util.Arrays
