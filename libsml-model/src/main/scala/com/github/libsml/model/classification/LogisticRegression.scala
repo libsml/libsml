@@ -10,7 +10,6 @@ import com.github.libsml.model.data.DataUtils
 import com.github.libsml.model.data.WeightedLabeledVector
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import com.github.libsml.commons.util.RDDFunctions._
 import com.github.libsml.commons.util.MapWrapper._
 
 /**
@@ -241,7 +240,7 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
         var i = 0
         while (i < data.length) {
 
-          fx+=gradientBinary(data(i).features, data(i).label, w, g, data(i).weight)
+          fx += gradientBinary(data(i).features, data(i).label, w, g, data(i).weight)
 
           i += 1
         }

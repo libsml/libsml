@@ -28,9 +28,13 @@
             <groupId>${project.groupId}</groupId>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>com.github.fommil.netlib</groupId>-->
-            <!--<artifactId>all</artifactId>-->
+        <!--<groupId>com.github.fommil.netlib</groupId>-->
+        <!--<artifactId>all</artifactId>-->
         <!--</dependency>-->
+        <dependency>
+            <groupId>org.scalanlp</groupId>
+            <artifactId>breeze_2.10</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
@@ -39,15 +43,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro-mapred</artifactId>
-            <version>1.7.7</version>
-            <classifier>hadoop2</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.apache.avro</groupId>-->
+            <!--<artifactId>avro-mapred</artifactId>-->
+            <!--<version>1.7.7</version>-->
+            <!--<classifier>hadoop2</classifier>-->
+        <!--</dependency>-->
+
     </dependencies>
 </project>

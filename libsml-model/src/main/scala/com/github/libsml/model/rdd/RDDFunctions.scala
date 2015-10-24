@@ -1,4 +1,4 @@
-package com.github.libsml.commons.util
+package com.github.libsml.model.rdd
 
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
