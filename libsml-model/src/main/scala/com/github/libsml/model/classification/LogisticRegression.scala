@@ -241,12 +241,8 @@ class SingleLogisticRegressionLoss(val data: Array[WeightedLabeledVector],
         var i = 0
         while (i < data.length) {
 
-          val fxo=gradientBinary(data(i).features, data(i).label, w, g, data(i).weight)
-          if(fxo.isNaN){
-            println(data(i))
+          fx+=gradientBinary(data(i).features, data(i).label, w, g, data(i).weight)
 
-          }
-          fx += fxo
           i += 1
         }
 
