@@ -1,13 +1,12 @@
 package com.github.libsml.optimization.lbfgs
 
-import com.github.libsml.math.function.Function
-import com.github.libsml.math.util.VectorUtils
-import com.github.libsml.optimization.linear.{LinearSearchException, LinearSearchFunction, LinearSearch}
-import com.github.libsml.optimization.{OptimizerResult, Optimizer}
-
-import com.github.libsml.math.linalg.Vector
-import com.github.libsml.math.linalg.BLAS._
 import com.github.libsml.commons.util.MapWrapper._
+import com.github.libsml.math.function.Function
+import com.github.libsml.math.linalg.BLAS._
+import com.github.libsml.math.linalg.Vector
+import com.github.libsml.math.util.VectorUtils
+import com.github.libsml.optimization.linear.{LinearSearch, LinearSearchException, LinearSearchFunction}
+import com.github.libsml.optimization.{Optimizer, OptimizerResult}
 
 /**
  * Created by huangyu on 15/9/5.
@@ -140,7 +139,11 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
       if (parameter.past > 0) {
         if (parameter.past <= iter) {
           rate = (pf(iter % parameter.past) - fun) / fun
+//          println(rate+":"+parameter.delta)
           if (rate < parameter.delta) {
+            isStop = true
+
+            msg = "Past stopping criterion"
             return new OptimizerResult[Vector](weight, Some(sg), Some(fun), Some(msg))
           }
         }
@@ -177,7 +180,7 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
     para.epsilon = map.getDouble("lbfgs.epsilon", para.epsilon)
     para.delta = map.getDouble("lbfgs.delta", para.delta)
     para.m = map.getInt("lbfgs.m", para.m)
-    para.past = map.getInt("lbfgs.m", para.past)
+    para.past = map.getInt("lbfgs.past", para.past)
     para.l1Start = map.getInt("l1.start", para.l1Start)
     para.l1End = map.getInt("l1.end", para.l1End)
     para

@@ -1,26 +1,25 @@
 package com.github.libsml.model.data
 
 
-import java.io.{PrintWriter, File}
+import java.io.{File, PrintWriter}
 import java.util
 import java.util.StringTokenizer
 
 import com.github.libsml.commons.util.AvroUtils
+import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.data.avro.Scheme
-import org.apache.avro.file.{DataFileWriter, DataFileReader}
-import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericDatumReader, GenericRecord}
+import org.apache.avro.file.{DataFileReader, DataFileWriter}
+import org.apache.avro.generic.{GenericData, GenericDatumReader, GenericDatumWriter, GenericRecord}
 import org.apache.avro.io.DatumReader
-import org.apache.avro.mapred.{AvroOutputFormat, AvroJob, AvroInputFormat, AvroWrapper}
+import org.apache.avro.mapred.{AvroInputFormat, AvroJob, AvroOutputFormat, AvroWrapper}
 import org.apache.commons.io.FileUtils
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.NullWritable
 import org.apache.hadoop.mapred.JobConf
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
-import com.github.libsml.math.linalg.Vector
 
 /**
  * Created by huangyu on 15/8/17.
@@ -139,10 +138,10 @@ object DataUtils {
     var i = 0
     while (i < m) {
       val tmp = st.nextToken().toInt
-      require(tmp <= featureNum, "Data exception!")
+      require(tmp <= featureNum, s"Data exception:${line}")
 
       if (i > 0) {
-        require(tmp > index(i - 1), "Data exception!")
+        require(tmp > index(i - 1), s"Data exception:${line}")
       }
       index(i) = tmp
       value(i) = st.nextToken().toDouble

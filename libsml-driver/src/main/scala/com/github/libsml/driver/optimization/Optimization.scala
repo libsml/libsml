@@ -3,15 +3,15 @@ package com.github.libsml.driver.optimization
 
 import java.io.PrintStream
 
-import com.github.libsml.commons.util.{Utils, Logging}
-import com.github.libsml.math.util.VectorUtils
-import com.github.libsml.model.data.{DataFormat, WeightedLabeledVector, DataUtils}
-import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator, Evaluator}
-import com.github.libsml.model.{ModelUtils, Model}
-import com.github.libsml.optimization.{OptimizerUtils, Optimizer}
-import com.github.libsml.math.linalg.Vector
-import com.github.libsml.math.function.Function
+import com.github.libsml.commons.util.{Logging, Utils}
 import com.github.libsml.driver.optimization.OptimizationMode._
+import com.github.libsml.math.function.Function
+import com.github.libsml.math.linalg.Vector
+import com.github.libsml.math.util.VectorUtils
+import com.github.libsml.model.data.{DataFormat, DataUtils, WeightedLabeledVector}
+import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator, Evaluator}
+import com.github.libsml.model.{Model, ModelUtils}
+import com.github.libsml.optimization.{Optimizer, OptimizerUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -109,6 +109,7 @@ object Optimization extends Logging {
           DataUtils.loadSVMData(conf.bias, conf.featureNum, path)
       }
     }
+
   }
 
   def getEvaluator(sc: Option[SparkContext], logStream: PrintStream, conf: OptimizationConf): Option[Evaluator[Vector, Vector]] = {

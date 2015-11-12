@@ -3,12 +3,11 @@ package com.github.libsml.feature.engineering.smooth
 
 import com.github.libsml.commons.LibsmlException
 import com.github.libsml.commons.util.Logging
+import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.dirichlet.DirichletMultinomial
 import com.github.libsml.optimization.{Optimizer, OptimizerUtils}
-import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.rdd.RDD
-
-import com.github.libsml.math.linalg.Vector
+import org.apache.spark.{SparkConf, SparkContext}
 
 
 /**
@@ -53,7 +52,18 @@ object BayesianSmooth extends Logging {
             optimizer.setFunction(function)
           }
           try {
-            val alphaBeta = optimizer.optimize()._1
+            //            val alphaBeta = optimizer.optimize()._1
+            var isStop = false
+            var alphaBeta: Vector = Vector(Array(0.0, 0.0))
+            for (t <- optimizer if !isStop) {
+              alphaBeta = t.w
+              isStop = t.f.map(_ < 10E-10).getOrElse(isStop)
+              isStop = if (alphaBeta(0) < 10E-10) true else isStop
+              isStop = if (alphaBeta(1) < 10E-10) true else isStop
+              if (isStop) {
+                logWarning(s"Function value or weight is too small,function value:${t.f},weight:${alphaBeta},key:${key}")
+              }
+            }
             key + "\t" + alphaBeta(0) + "\t" + alphaBeta(1)
           } catch {
             case e: Throwable =>

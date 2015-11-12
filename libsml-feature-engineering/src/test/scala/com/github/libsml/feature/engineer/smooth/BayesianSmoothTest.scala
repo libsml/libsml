@@ -1,13 +1,10 @@
 package com.github.libsml.feature.engineer.smooth
 
-import com.github.libsml.feature.engineering.smooth.{MedianDirichletMultinomial, FixedPointDirichletMultinomial, FixedPointBayesianOptimizer, BayesianSmoothFunction}
+import com.github.libsml.feature.engineering.smooth.{BayesianSmoothFunction, FixedPointBayesianOptimizer, FixedPointDirichletMultinomial}
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.dirichlet.DirichletMultinomial
 import com.github.libsml.optimization.lbfgs.LBFGS
-import com.github.libsml.optimization.{OptimizerUtils, Optimizer}
-import com.github.libsml.optimization.liblinear.{LiblinearParameter, Tron}
-import com.github.libsml.math.function.Function
-import com.github.libsml.optimization.newton.NewtonMethod
+import com.github.libsml.optimization.{Optimizer, OptimizerUtils}
 
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -117,30 +114,37 @@ object BayesianSmoothTest {
   def singleBayesianSmooth() = {
     //    val n: Int = 1843036
     val n: Int = 6482156
-    val clicks: Vector = Vector(6482156 * 2)
-    val unClicks: Vector = Vector(6482156 * 2)
+    val clicks: Vector = Vector(788 * 2)
+    val unClicks: Vector = Vector(788 * 2)
     var index: Int = 0
-    Source.fromFile("data/2963", "utf-8").getLines().foreach(line => {
+    Source.fromFile("dataset/5927318150097318014", "utf-8").getLines().foreach(line => {
       val ss = line.split("\\s+")
-      val c = ss(0).toDouble
-      clicks(index) = ss(0).toDouble
-      unClicks(index) = ss(1).toDouble - clicks(index)
+      //      val c = ss(0).toDouble
+      clicks(index) = ss(2).toDouble
+      unClicks(index) = ss(3).toDouble - clicks(index)
       index += 1
     })
     val data = Array(clicks, unClicks)
 
     val fun: DirichletMultinomial = new DirichletMultinomial(data)
-    val optimizer: Optimizer[Vector] = new LBFGS(Vector(Array(-1.0, 0.0)), fun)
+    val optimizer: Optimizer[Vector] = new LBFGS(Vector(Array(1.0, 1.0)), fun)
     //        val optimizer: Optimizer[Vector] = new NewtonMethod(fun, Vector(Array(0.5677, 8.839)))
     //        val optimizer: Optimizer[Vector] = new NewtonMethod(fun, Vector(Array(1.0, 1.0)))
     //    val optimizer: Optimizer[Vector] = new NewtonMethod(fun, fun.prior())
     //    val optimizer: Optimizer[Vector] = new Tron(Vector(Array(1.0, 1.0)), new LiblinearParameter(), fun)
-    for (r <- optimizer) {
-      println("f:" + r.f.get)
-      println("w:" + r.w)
-      println("g:" + r.g.get)
-      println(s"msg:${r.msg.get}")
+    var isStop = false
+    for (r <- optimizer if !isStop) {
+      val alphaBeta = r.w
+      isStop = r.f.map(_ < 10E-10).getOrElse(isStop)
+      isStop = if (alphaBeta(0) < 10E-10) true else isStop
+      isStop = if (alphaBeta(1) < 10E-10) true else isStop
+      println(r)
+      //      println("f:" + r.f.get)
+      //      println("w:" + r.w)
+      //      println("g:" + r.g.get)
+      //      println(s"msg:${r.msg.get}")
     }
+
   }
 
 
@@ -172,8 +176,8 @@ object BayesianSmoothTest {
     //    println(Vector.getClass)
     //    classTest(2.2)
     //    classRefect()
-    //    singleBayesianSmooth()
-    medianSmoothTest()
+    singleBayesianSmooth()
+    //    medianSmoothTest()
     //        singleFixPointDirichletMul()
     //        var v1: Vector = Vector(Array(1.0, 1.0))
     //        var v2: Vector = Vector()
