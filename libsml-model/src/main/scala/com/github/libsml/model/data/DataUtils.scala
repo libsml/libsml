@@ -51,7 +51,8 @@ object DataUtils {
       .map(kv => parseAvroRecord(kv._1.datum(), bias, featureNum))
   }
 
-  def loadSVMData2RDD(sc: SparkContext, bias: Double, featureNum: Int, path: String, numPartitions: Int): RDD[WeightedLabeledVector] = {
+  def loadSVMData2RDD(sc: SparkContext, bias: Double, featureNum: Int, path: String, numPartitions: Int,
+                      withWeight: Boolean = false): RDD[WeightedLabeledVector] = {
     sc.textFile(path, numPartitions).map(_.trim).filter(!_.isEmpty).map(parseSVMLine(_, bias, featureNum))
   }
 
@@ -131,7 +132,12 @@ object DataUtils {
       }
     }
     val m: Int = st.countTokens / 2
-    val y = token.toDouble
+    val (y, weight) = if (token.contains(':')) {
+      val ss = token.split(":")
+      (ss(0).trim.toDouble, ss(1).trim.toDouble)
+    } else {
+      (token.toDouble, 1.0)
+    }
     val index = new Array[Int](if (bias > 0) m + 1 else m)
     val value = new Array[Double](if (bias > 0) m + 1 else m)
 
@@ -151,7 +157,7 @@ object DataUtils {
       index(m) = featureNum
       value(m) = bias
     }
-    new WeightedLabeledVector(y, Vector(index, value))
+    new WeightedLabeledVector(y, Vector(index, value), weight)
   }
 
   def avroVector2TextVector(avroPath: String, textPath: String) = {
