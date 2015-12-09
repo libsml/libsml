@@ -45,7 +45,7 @@ object TronTest {
   def tronTest(): Unit = {
 
     val lrm = new LogisticRegressionModel(Vector())
-    val data = DataUtils.loadSVMData(1, 124, "data/a9a.txt")
+    val data = DataUtils.loadSVMData(1, 124, "dataset/a9a.txt")
     val lr = LogisticRegression(data)
     val tron = new Tron(Vector(), new LiblinearParameter(), lr)
     //    val it = tron.iterator()

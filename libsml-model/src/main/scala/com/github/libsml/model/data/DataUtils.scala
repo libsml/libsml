@@ -132,8 +132,8 @@ object DataUtils {
       }
     }
     val m: Int = st.countTokens / 2
-    val (y, weight) = if (token.contains(':')) {
-      val ss = token.split(":")
+    val (y, weight) = if (token.contains(',')) {
+      val ss = token.split(",")
       (ss(0).trim.toDouble, ss(1).trim.toDouble)
     } else {
       (token.toDouble, 1.0)
