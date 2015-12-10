@@ -1,19 +1,18 @@
 package com.github.libsml.driver.optimization
 
-import java.io.{InputStream, FileInputStream}
+import java.io.{FileInputStream, InputStream}
 import java.util.Properties
 
 import com.github.libsml.commons.LibsmlException
-import com.github.libsml.commons.util.{Utils, Logging}
+import com.github.libsml.commons.util.MapWrapper._
+import com.github.libsml.commons.util.{Logging, Utils}
 import com.github.libsml.driver.optimization.OptimizationMode._
 import com.github.libsml.math.linalg.VectorType
 import com.github.libsml.model.data.DataFormat
 
-import scala.collection.mutable
-import com.github.libsml.commons.util.MapWrapper._
-
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by huangyu on 15/9/6.
@@ -46,9 +45,9 @@ class OptimizationConf() extends Logging {
 
   def logFile: Option[String] = setting.get("logFile")
 
-  def functionClass = shortFullMap(setting("functionClass"))
+  def functionClass = fullClassName(setting("functionClass"))
 
-  def optimizerClass = shortFullMap(setting.getOrElse("optimizerClass", "tron"))
+  def optimizerClass = fullClassName(setting.getOrElse("optimizerClass", "tron"))
 
   def l1Regularizer: Int = setting.getInt("l1Regularizer", 0)
 
@@ -70,7 +69,7 @@ class OptimizationConf() extends Logging {
 
   def testReduceNum: Int = setting.getInt("testReduceNum", Math.max(1, (reduceNum * 0.2).toInt))
 
-  def modelClass = shortFullMap(setting("modelClass"))
+  def modelClass = fullClassName(setting("modelClass"))
 
   def prior = setting.get("prior")
 

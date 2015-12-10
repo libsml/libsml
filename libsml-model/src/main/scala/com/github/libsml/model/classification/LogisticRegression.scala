@@ -1,16 +1,15 @@
 package com.github.libsml.model.classification
 
 
-import com.github.libsml.model.classification.LogisticRegression._
+import com.github.libsml.commons.util.MapWrapper._
 import com.github.libsml.math.function.Function
-import com.github.libsml.math.util.{VectorUtils, MLMath}
-import com.github.libsml.model.Model
 import com.github.libsml.math.linalg.{BLAS, Vector}
-import com.github.libsml.model.data.DataUtils
-import com.github.libsml.model.data.WeightedLabeledVector
+import com.github.libsml.math.util.{MLMath, VectorUtils}
+import com.github.libsml.model.Model
+import com.github.libsml.model.classification.LogisticRegression._
+import com.github.libsml.model.data.{DataUtils, WeightedLabeledVector}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
-import com.github.libsml.commons.util.MapWrapper._
 
 /**
  * Created by huangyu on 15/7/26.
@@ -196,8 +195,13 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val reduceNum: In
    * @param hv Hessian  * d
    */
   override def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
+//    println("libsml debug s:" + w(0) + "," + w(10) + "," + w(100))
+//    println("libsml debug :" + d(0) + "," + d(10) + "," + d(100))
+//    println("libsml debug s:" + hv(0) + "," + hv(10) + "," + hv(100))
     hessianVector(w, d, hv, isUpdateHessian, setZero, reduceNum, featureNum, classNum)
-
+//    println("libsml debug e:" + w(0) + "," + w(10) + "," + w(100))
+//    println("libsml debug e:" + d(0) + "," + d(10) + "," + d(100))
+//    println("libsml debug e:" + hv(0) + "," + hv(10) + "," + hv(100))
   }
 
   override def isSecondDerivable: Boolean = true
@@ -442,7 +446,16 @@ object LogisticRegression {
     if (isUpdate && D.isDefined) {
       (D.get)(i) = di
     }
+//    println("libsml debug dw:"+dw)
+//    println("libsml debug di:"+di)
+//    println("libsml debug xd:"+xv(x,d))
+//    println("libsml debug w:"+w(0)+","+w(10)+","+w(100))
+//    println("libsml debug x:"+x(0)+","+x(10)+","+x(100))
+//    println("libsml debug d:"+d(0)+","+d(10)+","+d(100))
+//    println("libsml debug hv:"+hv(0)+","+hv(10)+","+hv(100))
     xTv(x, xv(x, d) * dw * di, hv)
+
+
 
   }
 

@@ -44,8 +44,9 @@ object TronTest {
 
   def tronTest(): Unit = {
 
-    val lrm = new LogisticRegressionModel(Vector())
-    val data = DataUtils.loadSVMData(1, 124, "dataset/a9a.txt")
+//    val lrm = new LogisticRegressionModel(Vector())
+    val lrm = new LogisticRegressionModel(Vector(new Array[Double](1411607)))
+    val data = DataUtils.loadSVMData(1, 1411606, "dataset/part-00166")
     val lr = LogisticRegression(data)
     val tron = new Tron(Vector(), new LiblinearParameter(), lr)
     //    val it = tron.iterator()
@@ -69,8 +70,8 @@ object TronTest {
 
   def lbfgsTest(): Unit = {
 
-    val lrm = new LogisticRegressionModel(Vector())
-    val data = DataUtils.loadSVMData(1, 124, "data/a9a.txt")
+    val lrm = new LogisticRegressionModel(Vector(new Array[Double](1411607)))
+    val data = DataUtils.loadSVMData(1, 1411606, "dataset/part-00166")
     val lr = LogisticRegression(data)
     //    val lbfgs = new Tron(Vector(), new LiblinearParameter(), lr)
     val lbfgs = new LBFGS(Vector(), lr)
@@ -102,7 +103,7 @@ object TronTest {
     //    tronTest()
     //    evaluatorTest()
     //    algorithmTest()
-//    lbfgsTest()
-    tronTest()
+    lbfgsTest()
+//    tronTest()
   }
 }

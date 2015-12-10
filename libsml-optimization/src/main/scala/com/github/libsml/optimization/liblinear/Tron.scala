@@ -1,11 +1,10 @@
 package com.github.libsml.optimization.liblinear
 
-import com.github.libsml.math.linalg.BLAS._
-import com.github.libsml.math.linalg.BLAS.euclideanNorm
-import com.github.libsml.math.linalg.{BLAS, Vector}
-import com.github.libsml.math.function.Function
-import com.github.libsml.math.util.VectorUtils
 import com.github.libsml.commons.util.MapWrapper._
+import com.github.libsml.math.function.Function
+import com.github.libsml.math.linalg.BLAS.{euclideanNorm, _}
+import com.github.libsml.math.linalg.{BLAS, Vector}
+import com.github.libsml.math.util.VectorUtils
 import com.github.libsml.optimization.{Optimizer, OptimizerResult}
 
 /**
@@ -203,17 +202,17 @@ class Tron(var _weight: Vector, val parameter: LiblinearParameter) extends Optim
       if (euclideanNorm(r) <= cgtol) return (cg_iter, "")
       cg_iter += 1
       //      BLAS.zero(Hd)
-      if (cg_iter < 10) {
-        //        println("s:" + s)
-        //        println("r:" + r)
-        //        println("Hd1:" + Hd)
-        //        println("d1:" + d)
-      }
+      //      if (cg_iter < 10) {
+      //        println("s:" + s)
+      //        println("r:" + r)
+      //        println("Hd1:" + Hd)
+      //        println("d1:" + d)
+      //      }
       function.hessianVector(w, d, Hd, cg_iter == 1)
-      if (cg_iter < 10) {
-        //        println("Hd2:" + Hd)
-        //        println("d2:" + d)
-      }
+      //      if (cg_iter < 10) {
+      //        println("Hd2:" + Hd)
+      //        println("d2:" + d)
+      //      }
 
 
       var alpha = rTr / dot(d, Hd)
