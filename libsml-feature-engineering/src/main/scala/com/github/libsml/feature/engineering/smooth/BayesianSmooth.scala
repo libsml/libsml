@@ -98,7 +98,7 @@ object BayesianSmooth extends Logging {
       }
     } catch {
       case e: Throwable =>
-        logError(e.getMessage)
+        logError(e.getMessage, e)
     }
   }
 

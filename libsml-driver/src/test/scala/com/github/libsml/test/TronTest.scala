@@ -1,13 +1,16 @@
 package com.github.libsml.test
 
+import java.io.PrintWriter
+
 import com.github.libsml.driver.optimization.DefaultOptimizationAlgorithm
-import com.github.libsml.model.classification.{LogisticRegressionModel, LogisticRegression}
+import com.github.libsml.math.function.Function._
+import com.github.libsml.math.linalg.Vector
+import com.github.libsml.model.classification.{LogisticRegression, LogisticRegressionModel}
 import com.github.libsml.model.data.DataUtils
-import com.github.libsml.model.evaluation.{SingleBinaryClassificationMetrics, BinaryClassificationMetrics}
+import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator, SingleBinaryClassificationMetrics}
+import com.github.libsml.model.regularization.L2Regularization
 import com.github.libsml.optimization.lbfgs.LBFGS
 import com.github.libsml.optimization.liblinear.{LiblinearParameter, Tron}
-import com.github.libsml.math.linalg.Vector
-import com.github.libsml.model.evaluation.BinaryDefaultEvaluator
 
 /**
  * Created by huangyu on 15/8/18.
@@ -44,15 +47,16 @@ object TronTest {
 
   def tronTest(): Unit = {
 
-//    val lrm = new LogisticRegressionModel(Vector())
-    val lrm = new LogisticRegressionModel(Vector(new Array[Double](1411607)))
-    val data = DataUtils.loadSVMData(1, 1411606, "dataset/part-00166")
-    val lr = LogisticRegression(data)
-    val tron = new Tron(Vector(), new LiblinearParameter(), lr)
+    //    val lrm = new LogisticRegressionModel(Vector())
+    val lrm = new LogisticRegressionModel(Vector(new Array[Double](30000)))
+    val data = DataUtils.loadSVMData(1, 30000, "dataset/hy_all")
+    val lr = LogisticRegression(data) + new L2Regularization(1.0)
+    val tron = new Tron(Vector(), new LiblinearParameter(maxIterations = 500), lr)
     //    val it = tron.iterator()
     //    while (it.hasNext) {
     //      println(it.next())
     //    }
+    var iter = 0
     for (r <- tron) {
       lrm.update(r.w)
       val scoreAndLabels = data.map(lv => {
@@ -61,11 +65,25 @@ object TronTest {
       val evaluator = new SingleBinaryClassificationMetrics(scoreAndLabels, 20)
       println(r.msg)
       println("auc:" + evaluator.areaUnderROC())
-      println("recall:")
-      evaluator.precisionByThreshold().foreach(d => {
-        print(d + " ")
+      //      println("recall:")
+      //      evaluator.precisionByThreshold().foreach(d => {
+      //        print(d + " ")
+      //      })
+      iter += 1
+      //      if (iter % 10 == 0) {
+      val p = new PrintWriter("result/hy_model/" + (iter), "utf-8")
+      r.w.foreachNoZero((i, v) => {
+        p.println(i + "\t" + v)
       })
+      p.close()
+      //      }
     }
+    val p = new PrintWriter("result/hy_model/" + (iter), "utf-8")
+    lrm.w.foreachNoZero((i, v) => {
+      p.println(i + "\t" + v)
+    })
+    p.close()
+
   }
 
   def lbfgsTest(): Unit = {
@@ -103,7 +121,7 @@ object TronTest {
     //    tronTest()
     //    evaluatorTest()
     //    algorithmTest()
-    lbfgsTest()
-//    tronTest()
+    //    lbfgsTest()
+    tronTest()
   }
 }
