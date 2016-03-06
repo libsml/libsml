@@ -71,14 +71,14 @@ object TronTest {
       //      })
       iter += 1
       //      if (iter % 10 == 0) {
-      val p = new PrintWriter("result/hy_model/" + (iter), "utf-8")
+      val p = new PrintWriter("result/hy_model_sch/" + (iter), "utf-8")
       r.w.foreachNoZero((i, v) => {
         p.println(i + "\t" + v)
       })
       p.close()
       //      }
     }
-    val p = new PrintWriter("result/hy_model/" + (iter), "utf-8")
+    val p = new PrintWriter("result/hy_model_sch/" + (iter), "utf-8")
     lrm.w.foreachNoZero((i, v) => {
       p.println(i + "\t" + v)
     })

@@ -42,7 +42,6 @@ object DataUtils {
       i += 1
     }
 
-
   }
 
   def loadAvroData2RDD(sc: SparkContext, bias: Double, featureNum: Int, path: String, numPartitions: Int): RDD[WeightedLabeledVector] = {
