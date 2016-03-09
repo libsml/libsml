@@ -2,6 +2,8 @@ package com.github.libsml.optimization
 
 import com.github.libsml.math.linalg.{BLAS, Vector}
 
+import scala.util.Random
+
 /**
  * Created by huangyu on 16/3/5.
  */
@@ -14,8 +16,11 @@ class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2
 
   private[this] val n: Vector = Vector()
 
+  private[this] val rdn = new Random(System.currentTimeMillis())
+
   private[this] var P: Int = 0
   private[this] var N: Int = 0
+
 
   def update2(x: Vector, _y: Double, dw: Double): this.type = {
     def sgn(d: Double) = if (d > 0) 1 else if (d < 0) -1 else 0
@@ -44,24 +49,37 @@ class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2
     this
   }
 
-  def update(x: Vector, _y: Double, dw: Double): this.type = {
+  def update(x: Vector, _y: Double, _dw: Double): this.type = {
 
 
     def sgn(d: Double) = if (d > 0) 1 else if (d < 0) -1 else 0
 
+    val pp = 0.5
     val y: Int = if (_y == 1) 1 else -1
+
+
+    if (y == -1 && rdn.nextInt(10) < 10 * (1 - pp)) return this
+
+
+    val dw = if (y == -1) _dw * 1 / pp else _dw
+
+
 
     val yz: Double = BLAS.dot(x, w) * y
     val p: Double = 1 / (1 + Math.exp(-yz))
     val tmp = y * (p - 1) * dw
 
     x.foreachNoZero((k, v) => {
-      val g = tmp * v
-      val thi = (Math.sqrt(n(k) + g * g) - Math.sqrt(n(k))) / alpha
-      z(k) = _ + (g - thi * w(k))
-      n(k) = _ + g * g
 
-      w(k) = (if (z(k) <= lambda1 && z(k) >= -lambda1) 0 else -(z(k) - sgn(z(k)) * lambda1) / ((beta + Math.sqrt(n(k))) / alpha + lambda2))
+      if (z(k) == 0 && y == -1 && rdn.nextInt(10) >= 1) {}
+      else {
+        val g = tmp * v
+        val thi = (Math.sqrt(n(k) + g * g) - Math.sqrt(n(k))) / alpha
+        z(k) = _ + (g - thi * w(k))
+        n(k) = _ + g * g
+
+        w(k) = (if (z(k) <= lambda1 && z(k) >= -lambda1) 0 else -(z(k) - sgn(z(k)) * lambda1) / ((beta + Math.sqrt(n(k))) / alpha + lambda2))
+      }
     })
 
     this
@@ -74,4 +92,13 @@ class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2
   def getN(): Vector = n
 
 
+}
+
+object FTRL {
+  def main(args: Array[String]): Unit = {
+    val rdn = new Random()
+    for (i <- 1 until 10000) {
+      println(rdn.nextInt(10))
+    }
+  }
 }

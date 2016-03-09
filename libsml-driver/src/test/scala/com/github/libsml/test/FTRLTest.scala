@@ -49,6 +49,8 @@ object FTRLTest {
       p.println(k + "\t" + v)
     })
     p.close()
+    println(op.getN().noZeroSize)
+    println(op.getZ().noZeroSize)
   }
 
   def main(args: Array[String]): Unit = {
