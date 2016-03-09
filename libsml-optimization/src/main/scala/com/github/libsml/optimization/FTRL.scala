@@ -2,6 +2,7 @@ package com.github.libsml.optimization
 
 import com.github.libsml.math.linalg.{BLAS, Vector}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 /**
@@ -9,7 +10,8 @@ import scala.util.Random
  */
 class FTRL(val alpha: Double, val beta: Double,
            val lambda1: Double, val lambda2: Double,
-           val _featureMinCount: Int, val dataSubSampling: Double) {
+           val _featureMinCount: Int, val dataSubSampling: Double,
+           val zMin: Double, val nMin: Double, clearRate: Double) {
 
 
   private[this] val w: Vector = Vector()
@@ -56,8 +58,37 @@ class FTRL(val alpha: Double, val beta: Double,
     this
   }
 
+  def clear(): Unit = {
+    val ids = new ArrayBuffer[Int]()
+    z.foreachNoZero((k, v) => {
+      if (Math.abs(v) <= zMin) {
+        ids += k
+      }
+    })
+
+    ids.foreach(k => {
+      z(k) = 0
+      n(k) = 0
+      w(k) = 0
+    })
+
+    val ids2 = new ArrayBuffer[Int]()
+    n.foreachNoZero((k, v) => {
+      if (Math.abs(v) <= nMin) {
+        ids2 += k
+      }
+    })
+
+    ids2.foreach(k => {
+      n(k) = 0
+    })
+
+  }
+
   def update(x: Vector, _y: Double, _dw: Double): this.type = {
 
+
+    if (rdn.nextInt(RANDOM_PRECISION) < RANDOM_PRECISION * clearRate) clear()
 
     def sgn(d: Double) = if (d > 0) 1 else if (d < 0) -1 else 0
 
@@ -74,7 +105,7 @@ class FTRL(val alpha: Double, val beta: Double,
 
     x.foreachNoZero((k, v) => {
 
-      if (z(k) != 0 || y != -1 || z(k) == 0 && y == -1 && isInclude(featureMinCount)) {
+      if (z(k) != 0 || y != -1 || isInclude(featureMinCount)) {
         val g = tmp * v
         val thi = (Math.sqrt(n(k) + g * g) - Math.sqrt(n(k))) / alpha
         z(k) = _ + (g - thi * w(k))

@@ -39,7 +39,7 @@ object FTRLTest {
       vs(ss.length - 1) = 1
       ds += ((1, Vector(is, vs), label))
     })
-    val op = new FTRL(1.0, 1.0, 1.0, 1.0, 5, 0.5)
+    val op = new FTRL(1.0, 1.0, 1.0, 1.0, 10, 0.5, 0.05, 0.001, 0.001)
     //    for (i <- 0 until 20)
     ds.foreach(d => {
       op.update(d._2, d._3, 1.0)
