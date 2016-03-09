@@ -39,7 +39,7 @@ object FTRLTest {
       vs(ss.length - 1) = 1
       ds += ((1, Vector(is, vs), label))
     })
-    val op = new FTRL(1.0, 1.0, 1.0, 1.0)
+    val op = new FTRL(1.0, 1.0, 1.0, 1.0, 5, 0.5)
     //    for (i <- 0 until 20)
     ds.foreach(d => {
       op.update(d._2, d._3, 1.0)
@@ -49,8 +49,18 @@ object FTRLTest {
       p.println(k + "\t" + v)
     })
     p.close()
-    println(op.getN().noZeroSize)
-    println(op.getZ().noZeroSize)
+
+    val zp = new PrintWriter("result/z", "utf-8")
+    op.getZ().foreachNoZero((k, v) => {
+      zp.println(k + "\t" + v)
+    })
+    zp.close()
+    val np = new PrintWriter("result/n", "utf-8")
+    op.getN().foreachNoZero((k, v) => {
+      np.println(k + "\t" + v)
+    })
+    np.close()
+
   }
 
   def main(args: Array[String]): Unit = {

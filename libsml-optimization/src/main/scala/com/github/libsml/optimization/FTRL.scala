@@ -7,19 +7,26 @@ import scala.util.Random
 /**
  * Created by huangyu on 16/3/5.
  */
-class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2: Double) {
+class FTRL(val alpha: Double, val beta: Double,
+           val lambda1: Double, val lambda2: Double,
+           val _featureMinCount: Int, val dataSubSampling: Double) {
 
 
   private[this] val w: Vector = Vector()
-
   private[this] val z: Vector = Vector()
-
   private[this] val n: Vector = Vector()
-
   private[this] val rdn = new Random(System.currentTimeMillis())
-
   private[this] var P: Int = 0
   private[this] var N: Int = 0
+
+  private[this] val RANDOM_PRECISION: Int = 1000
+  private[this] val featureMinCount = RANDOM_PRECISION / _featureMinCount
+  private[this] val dataMinCount = RANDOM_PRECISION * dataSubSampling
+
+
+  private def isInclude(minCount: Double): Boolean = {
+    rdn.nextInt(RANDOM_PRECISION) < minCount
+  }
 
 
   def update2(x: Vector, _y: Double, dw: Double): this.type = {
@@ -54,16 +61,12 @@ class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2
 
     def sgn(d: Double) = if (d > 0) 1 else if (d < 0) -1 else 0
 
-    val pp = 0.5
     val y: Int = if (_y == 1) 1 else -1
 
 
-    if (y == -1 && rdn.nextInt(10) < 10 * (1 - pp)) return this
+    if (y == -1 && !isInclude(dataMinCount)) return this
 
-
-    val dw = if (y == -1) _dw * 1 / pp else _dw
-
-
+    val dw = if (y == -1) _dw / dataSubSampling else _dw
 
     val yz: Double = BLAS.dot(x, w) * y
     val p: Double = 1 / (1 + Math.exp(-yz))
@@ -71,13 +74,11 @@ class FTRL(val alpha: Double, val beta: Double, val lambda1: Double, val lambda2
 
     x.foreachNoZero((k, v) => {
 
-      if (z(k) == 0 && y == -1 && rdn.nextInt(10) >= 1) {}
-      else {
+      if (z(k) != 0 || y != -1 || z(k) == 0 && y == -1 && isInclude(featureMinCount)) {
         val g = tmp * v
         val thi = (Math.sqrt(n(k) + g * g) - Math.sqrt(n(k))) / alpha
         z(k) = _ + (g - thi * w(k))
         n(k) = _ + g * g
-
         w(k) = (if (z(k) <= lambda1 && z(k) >= -lambda1) 0 else -(z(k) - sgn(z(k)) * lambda1) / ((beta + Math.sqrt(n(k))) / alpha + lambda2))
       }
     })
