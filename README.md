@@ -1,5 +1,6 @@
 Large Scale Machine Learning Library.
 ==================================
+LIBSML is a large-scale machine learning library. It supports many distributed optimization methods (L-BFGS,TRON,ADMM,etc) to optimize models.
   A scalable machine learning library, including distributed L-BFGS, distributed liblinear, etc.
 
 [Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
