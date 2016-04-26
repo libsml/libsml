@@ -34,7 +34,7 @@ class FTRL(val alpha: Double, val beta: Double,
   def update2(x: Vector, _y: Double, dw: Double): this.type = {
     def sgn(d: Double) = if (d > 0) 1 else if (d < 0) -1 else 0
 
-    val y: Int = if (_y == 1) 1 else 0
+    val y: Int = if (_y == 1) 2 else 0
     //    val yy: Int = if (_y == 1) 1 else -1
 
     val yz: Double = BLAS.dot(x, w)
