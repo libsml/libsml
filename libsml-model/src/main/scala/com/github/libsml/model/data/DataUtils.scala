@@ -20,6 +20,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
+import collection.mutable
 
 /**
  * Created by huangyu on 15/8/17.
@@ -42,6 +43,19 @@ object DataUtils {
       i += 1
     }
 
+  }
+
+  def inverseData(data: RDD[WeightedLabeledVector], reduceNum: Int): RDD[(Array[Vector], Array[Byte], Array[Double], Array[Int])] = {
+    data.mapPartitionsWithIndex((pid, ds) => {
+      val inverse = new mutable.HashMap[Int, mutable.Map[String, Double]]()
+      ds.map(d => {
+
+
+      })
+      Seq[String]().toIterator
+    })
+
+    null
   }
 
   def loadAvroData2RDD(sc: SparkContext, bias: Double, featureNum: Int, path: String, numPartitions: Int): RDD[WeightedLabeledVector] = {

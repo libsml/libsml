@@ -52,12 +52,14 @@ object FTRLTest {
 
     val zp = new PrintWriter("result/z", "utf-8")
     op.getZ().foreachNoZero((k, v) => {
-      zp.println(k + "\t" + v)
+      if (Math.abs(v) >= 0.05)
+        zp.println(k + "\t" + v)
     })
     zp.close()
     val np = new PrintWriter("result/n", "utf-8")
     op.getN().foreachNoZero((k, v) => {
-      np.println(k + "\t" + v)
+      if (Math.abs(v) >= 0.001)
+        np.println(k + "\t" + v)
     })
     np.close()
 
