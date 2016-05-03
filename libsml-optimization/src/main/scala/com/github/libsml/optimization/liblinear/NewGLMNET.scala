@@ -192,8 +192,8 @@ object NewGLMNET {
       if (iter >= max_iter) println("WARNING: reaching max number of inner iterations\n")
 
 
-      Gmax_old = Gmax_new
-      printf("iter %3d  #CD cycles %d\n", newton_iter, iter)
+//      Gmax_old = Gmax_new
+//      printf("iter %3d  #CD cycles %d\n", newton_iter, iter)
     }
 
 

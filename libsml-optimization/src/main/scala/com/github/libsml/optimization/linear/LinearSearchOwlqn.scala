@@ -8,8 +8,13 @@ import com.github.libsml.math.function.Function
 class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
 
   override def search(function: Function[Double], initStep: Double): (Int, Double, Double) = {
+    require(function.isInstanceOf[LinearSearchOwlqn], "Line search:owlqn line search function error.")
 
-    val (dginit, finit) = function.gradient(0, 0)
+    def subGrandient(stp: Double): (Double, Double) = {
+      function.subGradient(stp, 0., 0., 0.)
+    }
+
+    val (dginit, finit) = subGrandient(0)
 
     /* Make sure that s points to a descent direction. */
     if (dginit > 0) {
@@ -34,7 +39,8 @@ class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
         step *= dec
       }
 
-      val dgf = function.gradient(step, 0)
+      //      val dgf = function.subGradient(step, 0., 0., 0.)
+      val dgf = subGrandient(step)
       dg = dgf._1
       fnew = dgf._2
       count += 1
@@ -42,7 +48,8 @@ class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
       if (outOfBound) {
         while (fnew > finit + step * dgtest) {
           step *= dec
-          val dgf = function.gradient(step, 0)
+          //          val dgf = function.subGradient(step, 0., 0., 0.)
+          val dgf = subGrandient(step)
           dg = dgf._1
           fnew = dgf._2
           count += 1

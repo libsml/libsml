@@ -269,4 +269,9 @@ object BLAS extends Serializable {
     }
   }
 
+  def l1Norm(x: Vector): Double = {
+    var l1 = 0.
+    x.foreachNoZero((k, v) => l1 += Math.abs(v))
+    l1
+  }
 }

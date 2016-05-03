@@ -54,13 +54,13 @@ class LBFGSParameter {
    * x_1, ..., x_{b-1} (e.g., a bias term of logistic regression) from being
    * regularized. The default value is zero.
    */
-  var l1Start: Int = 0
+//  var l1Start: Int = 0
   /**
    * End index for computing L1 norm of the variables. This parameter is valid
    * only for OWL-QN method (i.e., orthantwiseC != 0). This parameter e (0 < e
    * <= N) specifies the index number at which the library stops computing the
    * L1 norm of the variables x,
    */
-  var l1End: Int = 0
+//  var l1End: Int = 0
 
 }
