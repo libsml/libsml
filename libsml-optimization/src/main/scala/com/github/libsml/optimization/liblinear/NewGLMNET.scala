@@ -65,7 +65,7 @@ object NewGLMNET {
       Hdiag(j) = nu
       Grad(j) = 0
 
-      var tmp = 0
+      var tmp = 0.0
       ix(j).foreachNoZero((ind, v) => {
         Hdiag(j) += v * v * D(ind)
         tmp += v * tau(ind)

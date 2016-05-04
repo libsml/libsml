@@ -37,7 +37,7 @@ class L1Regularization(val lambda: Double) extends Function[Vector] {
       }
     }
     )
-    (sg, BLAS.l1Norm(w))
+    (sg, f + BLAS.l1Norm(w))
 
   }
 

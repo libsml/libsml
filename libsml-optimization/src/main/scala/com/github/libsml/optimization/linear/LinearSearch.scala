@@ -4,6 +4,7 @@ package com.github.libsml.optimization.linear
 import com.github.libsml.commons.LibsmlException
 import com.github.libsml.math.function.Function
 import com.github.libsml.commons.util.MapWrapper._
+import com.github.libsml.math.linalg.Vector
 
 /**
  * Created by huangyu on 15/8/26.
@@ -14,8 +15,8 @@ trait LinearSearch {
 }
 
 object LinearSearch {
-  def apply(map: Map[String, String]): LinearSearch = {
-    val linearType = map.getOrElse("linearSearch.type", "strongWolf")
+  def apply(map: Map[String, String], fun: Function[Vector]): LinearSearch = {
+    val linearType = if (fun.isDerivable) map.getOrElse("linearSearch.type", "strongWolf") else "owlqn"
     val para = new LinerSearchParameter()
     para.ftol = map.getDouble("linearSearch.ftol", para.ftol)
     para.gtol = map.getDouble("linearSearch.gtol", para.gtol)
@@ -52,6 +53,8 @@ object LinearSearch {
         new LinearSearchWolf(para)
       case "strongWolf" =>
         new LinearSearchStrongWolf(para)
+      case "owlqn" =>
+        new LinearSearchOwlqn(para)
       case _ =>
         throw new LibsmlException(s"Unsupported linear search type:${linearType},linear type is:armijo,wolf,strongWolf.")
     }

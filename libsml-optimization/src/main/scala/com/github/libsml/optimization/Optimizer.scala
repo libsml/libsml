@@ -45,5 +45,4 @@ case class OptimizerResult[W](val w: W,
                                         val g: Option[W] = None,
                                         val f: Option[Double] = None,
                                         val msg: Option[String] = None) {
-
 }

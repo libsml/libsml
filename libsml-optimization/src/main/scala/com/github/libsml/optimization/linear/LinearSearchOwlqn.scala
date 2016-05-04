@@ -8,7 +8,7 @@ import com.github.libsml.math.function.Function
 class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
 
   override def search(function: Function[Double], initStep: Double): (Int, Double, Double) = {
-    require(function.isInstanceOf[LinearSearchOwlqn], "Line search:owlqn line search function error.")
+//    require(function.isInstanceOf[LinearSearchOwlqn], "Line search:owlqn line search function error "+function.getClass)
 
     def subGrandient(stp: Double): (Double, Double) = {
       function.subGradient(stp, 0., 0., 0.)
@@ -18,7 +18,7 @@ class LinearSearchOwlqn(val param: LinerSearchParameter) extends LinearSearch {
 
     /* Make sure that s points to a descent direction. */
     if (dginit > 0) {
-      throw new LinearSearchException("Line search:INCREASEGRADIENT")
+      throw new LinearSearchException("Line search:INCREASEGRADIENT," + dginit)
     }
 
     val dgtest = param.ftol * dginit

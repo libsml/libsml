@@ -1,11 +1,12 @@
 package com.github.libsml.optimization.lbfgs
 
 import com.github.libsml.commons.util.MapWrapper._
+import collection.mutable
 import com.github.libsml.math.function.Function
 import com.github.libsml.math.linalg.BLAS._
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.math.util.VectorUtils
-import com.github.libsml.optimization.linear.{LinearSearch, LinearSearchException, LinearSearchFunction}
+import com.github.libsml.optimization.linear.{LinearSearchFunctionOwlqn, LinearSearch, LinearSearchException, LinearSearchFunction}
 import com.github.libsml.optimization.{Optimizer, OptimizerResult}
 
 /**
@@ -19,7 +20,7 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
   }
 
   var parameter: LBFGSParameter = initParameter(map)
-  private[this] val linearSearch: LinearSearch = LinearSearch(map)
+  private[this] val linearSearch: LinearSearch = LinearSearch(map,function)
   private[this] val directSearch: DirectSearch = DirectSearch(map, parameter.m)
 
   private[this] var iter = 0
@@ -89,6 +90,7 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
         xnorm = 1.0
       }
 
+
       if (gnorm / xnorm <= parameter.epsilon) {
         isStop = true
         msg = "Initial Convergence"
@@ -107,13 +109,16 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
           msg += s"\nlinearSearchIter:${linearSearchIter}"
           //          println(s"fun2:${fun}")
         } else {
-          //TODO:L1 norm
+          val tmp = linearSearch.search(new LinearSearchFunctionOwlqn(weight, fun, g, sg, d, function, Some(xp)), step)
+          fun = tmp._2
+          linearSearchIter = tmp._1
+          msg += s"\nlinearSearchIter:${linearSearchIter}"
         }
       } catch {
         case e: LinearSearchException =>
           msg = e.getMessage
           isStop = true
-          return new OptimizerResult[Vector](xp, Some(sg), Some(fun), Some(msg))
+          return new OptimizerResult[Vector](xp, Some(g), Some(fun), Some(msg))
       }
 
       /* Compute x and g norms. */
@@ -139,7 +144,7 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
       if (parameter.past > 0) {
         if (parameter.past <= iter) {
           rate = (pf(iter % parameter.past) - fun) / fun
-//          println(rate+":"+parameter.delta)
+          //          println(rate+":"+parameter.delta)
           if (rate < parameter.delta) {
             isStop = true
 
@@ -154,13 +159,16 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
 
 
       if (!function.isDerivable) {
-        var i = parameter.l1Start
-        while (i < parameter.l1End) {
-          if (d(i) * sg(i) >= 0) {
-            d(i) = 0
-          }
-          i += 1
-        }
+        val zeroSet = new mutable.HashSet[Int]()
+        d.foreachNoZero((k, v) => if (v * sg(k) >= 0) zeroSet += k)
+        zeroSet.foreach(k => d(k) = 0)
+        //        var i = parameter.l1Start
+        //        while (i < parameter.l1End) {
+        //          if (d(i) * sg(i) >= 0) {
+        //            d(i) = 0
+        //          }
+        //          i += 1
+        //        }
       }
 
       step = 1.0
@@ -181,8 +189,8 @@ class LBFGS(var _weight: Vector, map: Map[String, String], var function: Functio
     para.delta = map.getDouble("lbfgs.delta", para.delta)
     para.m = map.getInt("lbfgs.m", para.m)
     para.past = map.getInt("lbfgs.past", para.past)
-    para.l1Start = map.getInt("l1.start", para.l1Start)
-    para.l1End = map.getInt("l1.end", para.l1End)
+    //    para.l1Start = map.getInt("l1.start", para.l1Start)
+    //    para.l1End = map.getInt("l1.end", para.l1End)
     para
   }
 

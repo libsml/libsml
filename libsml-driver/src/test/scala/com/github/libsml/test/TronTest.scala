@@ -34,7 +34,7 @@ object TronTest {
 
   def algorithmTest(): Unit = {
 
-    val data = DataUtils.loadSVMData(1, 124, "data/a9a.txt")
+    val data = DataUtils.loadSVMData(1, 124, "dataset/a9a.txt")
     val methods = Array("areaUnderROC", "areaUnderPR")
     val lrm = new LogisticRegressionModel(Vector())
     val lr = LogisticRegression(data)
@@ -120,8 +120,8 @@ object TronTest {
   def main(args: Array[String]) {
     //    tronTest()
     //    evaluatorTest()
-    //    algorithmTest()
+    algorithmTest()
     //    lbfgsTest()
-    tronTest()
+    //    tronTest()
   }
 }
