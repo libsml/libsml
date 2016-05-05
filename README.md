@@ -16,7 +16,7 @@ The following code illustrates how to load a sample dataset, split it into train
 to fit a machine learning model, such as logistic regression, linear supporting vector machine.
 Then the model is evaluated against the test dataset and saved to disk.
 
-```java
+```scala
 public class A{
 }
 ```
