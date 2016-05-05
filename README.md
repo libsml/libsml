@@ -6,7 +6,9 @@ K-Means, collaborative filtering, as well as effective optimization methods, inc
 
 ##Building LIBSML
 
-LIBSML is built using Apache Maven. 
+LIBSML is built using Apache Maven. To build LIBSML, run
+
+    build/mvn -DskipTests clean package
 
 ##[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
 
