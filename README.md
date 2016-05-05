@@ -26,9 +26,6 @@ import com.github.libsml.model.regularization.{L1Regularization, L2Regularizatio
 import com.github.libsml.optimization.lbfgs.LBFGS
 import com.github.libsml.optimization.liblinear.{LiblinearParameter, Tron}
 import com.github.libsml.math.function.Function._
-public class A{
-
-}
 ```
 
 ##[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
