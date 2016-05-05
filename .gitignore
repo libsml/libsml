@@ -9,9 +9,10 @@ output-asf-email-examples/
 .DS_Store
 *.iml
 target/
-result/
-log/
+/result/
+/log/
+/bin/
 .idea
 */target
-dataset/
+/dataset/
 libsml-feature-selection/
