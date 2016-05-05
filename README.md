@@ -9,7 +9,10 @@ collaborative filtering, as well as effective optimization methods, including L-
 LIBSML is built using Apache Maven. To build LIBSML, run
 
     mvn -DskipTests clean package
-    To run tests do mvn test
+
+To run tests
+
+    mvn test
 
 To use maven, add the appropriate setting to your pom.xml.
 
