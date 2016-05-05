@@ -1,10 +1,9 @@
 package com.github.libsml.test
 
-import com.github.libsml.model.classification.LogisticRegressionModel
 import com.github.libsml.model.classification.{LogisticRegression, LogisticRegressionModel}
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.data.DataUtils
-import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator, SingleBinaryClassificationMetrics}
+import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator}
 import com.github.libsml.model.regularization.{L1Regularization, L2Regularization}
 import com.github.libsml.optimization.lbfgs.LBFGS
 import com.github.libsml.optimization.liblinear.{LiblinearParameter, Tron}
