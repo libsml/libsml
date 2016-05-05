@@ -15,14 +15,18 @@ import com.github.libsml.math.function.Function._
 object LBFGSTest {
   def test(): Unit = {
 
-    val data = DataUtils.loadSVMData(1, 124, "dataset/a9a.txt")
+    val data = DataUtils.loadSVMData(1, "data/sample_libsvm_data.txt")
+    //    val data = DataUtils.loadSVMData(1, 124, "dataset/a9a.txt")
     //    val methods = Array("areaUnderROC", "areaUnderPR")
     val methods = Array("areaUnderROC")
-    val lr = LogisticRegression(data) + new L1Regularization(1.) + new L2Regularization(1.0)
+    //        val lr = LogisticRegression(data) + new L1Regularization(1.) + new L2Regularization(1.0)
+    //    val lr = LogisticRegression(data) + new L2Regularization(1.0)
+    //    val lr = LogisticRegression(data) + new L1Regularization(1.0)
+    val lr = LogisticRegression(data)
     //    val lr = LogisticRegression(data)
     val para = Map[String,String]("lbfgs.maxIterations"->"100")
-    val op = new LBFGS(Vector(), para, lr)
-    //    val op = new Tron(Vector(), new LiblinearParameter(), lr)
+    //    val op = new LBFGS(Vector(), para, lr)
+    val op = new Tron(Vector(), new LiblinearParameter(), lr)
     val evaluator = new BinaryDefaultEvaluator(Right(data), methods, testOutput = Some(System.out))
     var iter = 0
     for (r <- op) {

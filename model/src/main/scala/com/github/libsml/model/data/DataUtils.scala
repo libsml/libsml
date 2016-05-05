@@ -69,6 +69,12 @@ object DataUtils {
     sc.textFile(path, numPartitions).map(_.trim).filter(!_.isEmpty).map(parseSVMLine(_, bias, featureNum))
   }
 
+  def loadSVMData(bias: Double, path: String): Array[WeightedLabeledVector] = {
+    var featureNum = -1
+    parseStringToFiles(path).foreach(Source.fromFile(_, "utf-8").getLines().filter(_.trim != "").foreach(l => featureNum = Math.max(featureNum, parseFeatureNum(l))))
+    loadSVMData(bias, featureNum, path)
+  }
+
   def loadSVMData(bias: Double, featureNum: Int, path: String): Array[WeightedLabeledVector] = {
     loadSVMData(bias, featureNum, parseStringToFiles(path): _*)
   }
@@ -130,6 +136,29 @@ object DataUtils {
     new WeightedLabeledVector(AvroUtils.getDoubleAvro(record, "y", false), Vector(index, value),
       AvroUtils.getDoubleAvro(record, "weight", 1.0)
     )
+  }
+
+  private[this] def parseFeatureNum(line: String): Int = {
+
+    var featureNum = -1
+    val st: StringTokenizer = new StringTokenizer(line, " \t\n\r\f:")
+    var token: String = null
+    try {
+      token = st.nextToken
+    }
+    catch {
+      case e: NoSuchElementException => {
+        throw new IllegalStateException("Data exception:libsvm format empty line ")
+      }
+    }
+    val m: Int = st.countTokens / 2
+    var i = 0
+    while (i < m) {
+      featureNum = Math.max(st.nextToken().toInt, featureNum)
+      st.nextToken()
+      i += 1
+    }
+    featureNum
   }
 
   private[this] def parseSVMLine(line: String, bias: Double, featureNum: Int): WeightedLabeledVector = {
