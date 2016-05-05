@@ -4,15 +4,24 @@ LIBSML is a large-scale machine learning library. Its goal is to make practical 
 It consists of common learning models, including logistic regression, linear supporting vector machine,
 collaborative filtering, as well as effective optimization methods, including L-BFGS, TRON, SGD, FTRL.
 
-##Building LIBSML
+##Using LIBSML as a Library
 
 LIBSML is built using Apache Maven. To build LIBSML, run
 
     mvn -DskipTests clean package
+    To run tests do mvn test
+
+To use maven, add the appropriate setting to your pom.xml.
+
+    <dependency>
+        <groupId>com.github.libsml</groupId>
+        <artifactId>libsml-aggregation</artifactId>
+        <version>1.0</version>
+    </dependency>
 
 ##Examples
 
-The following code illustrates how to load a sample dataset, split it into train and test, and use optimization method to
+The following code illustrates how to load a sample dataset, split it into train and test, and use optimization method
 to fit a machine learning model, such as logistic regression, linear supporting vector machine.
 Then the model is evaluated against the test dataset and saved to disk.
 
