@@ -10,6 +10,12 @@ LIBSML is built using Apache Maven. To build LIBSML, run
 
     mvn -DskipTests clean package
 
+##Examples
+
+The following code illustrates how to load a sample dataset, split it into train and test, and use optimization method to
+to fit a machine learning model, such as logistic regression, linear supporting vector machine.
+Then the model is evaluated against the test dataset and saved to disk.
+
 ##[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
 
 A distributed implemention of L-BFGS, supporting L1-regularization, L2-regularization and three modes(local, mr and spark) to train/test a model.

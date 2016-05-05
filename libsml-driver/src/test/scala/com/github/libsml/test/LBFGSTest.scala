@@ -1,5 +1,6 @@
 package com.github.libsml.test
 
+import com.github.libsml.model.classification.LogisticRegressionModel
 import com.github.libsml.model.classification.{LogisticRegression, LogisticRegressionModel}
 import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.data.DataUtils
