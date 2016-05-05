@@ -2,7 +2,11 @@
 
 LIBSML is a large-scale machine learning library. Its goal is to make practical machine learning scalable and easy.
 It consists of common learning models, including logistic regression, linear supporting vector machine,
-K-Means, collaborative filtering, as well as effective
+K-Means, collaborative filtering, as well as effective optimization methods, including L-BFGS, TRON, SGD, FTRL.
+
+##Building LIBSML
+
+LIBSML is built using Apache Maven. 
 
 ##[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
 
