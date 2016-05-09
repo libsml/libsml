@@ -1,7 +1,7 @@
 package com.github.libsml.model
 
 import com.github.libsml.math.linalg.Vector
-import com.github.libsml.commons.util.Utils
+import com.github.libsml.model.data.DataUtils
 
 /**
  * Created by huangyu on 15/9/7.
@@ -9,7 +9,10 @@ import com.github.libsml.commons.util.Utils
 object ModelUtils {
 
   val shortFullMap: Map[String, String] = Map(
-    "lr" -> "com.github.libsml.model.classification.LogisticRegressionModel")
+    "lr" -> "com.github.libsml.model.classification.LogisticRegressionModel",
+    "LogisticRegression" -> "com.github.libsml.model.classification.LogisticRegressionModel",
+    "LinearSVM" -> "com.github.libsml.model.classification.LinearModel",
+    "LinearRegression" -> "com.github.libsml.model.regression.LinearRegressionModel")
 
   private[this] def fullClassName(className: String): String = {
     shortFullMap.getOrElse(className, className)
@@ -69,6 +72,22 @@ object ModelUtils {
     }
   }
 
+  def loadModel(_className: String, modelPath: String): Model[Vector, Vector] = {
 
+    val weight = Vector()
+    val threshold = DataUtils.readAvro2VectorAddition(modelPath, weight).asInstanceOf[java.lang.Double]
+    val className = fullClassName(_className)
+    val cls = Class.forName(className)
+    val model =
+      try {
+        cls.getConstructor(classOf[Vector], classOf[java.lang.Double])
+          .newInstance(weight, threshold)
+          .asInstanceOf[Model[Vector, Vector]]
+      } catch {
+        case _: NoSuchMethodException =>
+          cls.getConstructor(classOf[Vector]).newInstance(weight).asInstanceOf[Model[Vector, Vector]]
+      }
+    model
+  }
 
 }

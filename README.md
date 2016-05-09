@@ -1,7 +1,7 @@
 #Large Scale Machine Learning Library.
 
 LIBSML is a large-scale machine learning library. Its goal is to make practical machine learning scalable and easy.
-It consists of common learning models, including logistic regression, linear supporting vector machine,
+It consists of common learning models, including linear regression, logistic regression, linear supporting vector machine,
 collaborative filtering, as well as effective optimization methods, including L-BFGS, TRON, SGD, FTRL.
 
 ##Using LIBSML as a Library

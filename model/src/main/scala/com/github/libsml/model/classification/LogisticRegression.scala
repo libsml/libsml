@@ -10,6 +10,7 @@ import com.github.libsml.model.classification.LogisticRegression._
 import com.github.libsml.model.data.{DataUtils, WeightedLabeledVector}
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
+import com.github.libsml.model.Utils._
 
 /**
  * Created by huangyu on 15/7/26.
@@ -195,13 +196,13 @@ class LogisticRegression(val data: RDD[WeightedLabeledVector], val reduceNum: In
    * @param hv Hessian  * d
    */
   override def hessianVector(w: Vector, d: Vector, hv: Vector, isUpdateHessian: Boolean, setZero: Boolean): Unit = {
-//    println("libsml debug s:" + w(0) + "," + w(10) + "," + w(100))
-//    println("libsml debug :" + d(0) + "," + d(10) + "," + d(100))
-//    println("libsml debug s:" + hv(0) + "," + hv(10) + "," + hv(100))
+    //    println("libsml debug s:" + w(0) + "," + w(10) + "," + w(100))
+    //    println("libsml debug :" + d(0) + "," + d(10) + "," + d(100))
+    //    println("libsml debug s:" + hv(0) + "," + hv(10) + "," + hv(100))
     hessianVector(w, d, hv, isUpdateHessian, setZero, reduceNum, featureNum, classNum)
-//    println("libsml debug e:" + w(0) + "," + w(10) + "," + w(100))
-//    println("libsml debug e:" + d(0) + "," + d(10) + "," + d(100))
-//    println("libsml debug e:" + hv(0) + "," + hv(10) + "," + hv(100))
+    //    println("libsml debug e:" + w(0) + "," + w(10) + "," + w(100))
+    //    println("libsml debug e:" + d(0) + "," + d(10) + "," + d(100))
+    //    println("libsml debug e:" + hv(0) + "," + hv(10) + "," + hv(100))
   }
 
   override def isSecondDerivable: Boolean = true
@@ -446,15 +447,14 @@ object LogisticRegression {
     if (isUpdate && D.isDefined) {
       (D.get)(i) = di
     }
-//    println("libsml debug dw:"+dw)
-//    println("libsml debug di:"+di)
-//    println("libsml debug xd:"+xv(x,d))
-//    println("libsml debug w:"+w(0)+","+w(10)+","+w(100))
-//    println("libsml debug x:"+x(0)+","+x(10)+","+x(100))
-//    println("libsml debug d:"+d(0)+","+d(10)+","+d(100))
-//    println("libsml debug hv:"+hv(0)+","+hv(10)+","+hv(100))
+    //    println("libsml debug dw:"+dw)
+    //    println("libsml debug di:"+di)
+    //    println("libsml debug xd:"+xv(x,d))
+    //    println("libsml debug w:"+w(0)+","+w(10)+","+w(100))
+    //    println("libsml debug x:"+x(0)+","+x(10)+","+x(100))
+    //    println("libsml debug d:"+d(0)+","+d(10)+","+d(100))
+    //    println("libsml debug hv:"+hv(0)+","+hv(10)+","+hv(100))
     xTv(x, xv(x, d) * dw * di, hv)
-
 
 
   }
@@ -463,7 +463,7 @@ object LogisticRegression {
   def hessianVectorMultinomial(x: Vector, y: Double, w: Vector, d: Vector, hv: Vector, classNum: Int, featureNum: Int, i: Int = -1,
                                isUpdate: Boolean = true, KD: Option[Array[Array[Double]]] = None, dw: Double = 1): Unit = {
 
-    val kd = KD.map(_(i)).getOrElse(new Array[Double](classNum - 1))
+    val kd = KD.map(_ (i)).getOrElse(new Array[Double](classNum - 1))
 
     def computeKD(kd: Array[Double]): Array[Double] = {
 
@@ -539,38 +539,6 @@ object LogisticRegression {
     }
 
 
-  }
-
-  def getVectorFromRdd(vector: Vector, rdd: RDD[(Int, Double)]): Double = {
-    var attach: Double = 0
-
-    val rddc = if (rdd.partitions.length < 200) rdd else rdd.coalesce(100)
-    //    BLAS.zero(vector)
-
-    //    val parts = rddc.partitions
-    //    for (p <- parts) {
-    //      val idx = p.index
-    //      val partRdd = rddc.mapPartitionsWithIndex((index, it) => if (index == idx) it else Iterator[(Int, Double)](), true)
-    //      val dataPartitioned = partRdd.collect
-    //      var i: Int = 0
-    //      while (i < dataPartitioned.length) {
-    //        if (dataPartitioned(i)._1 == -1) {
-    //          attach = dataPartitioned(i)._2
-    //        } else {
-    //          vector(dataPartitioned(i)._1) = dataPartitioned(i)._2
-    //        }
-    //        i += 1
-    //      }
-    //    }
-
-    rddc.collect().foreach(kv => {
-      if (kv._1 == -1) {
-        attach = kv._2
-      } else {
-        vector(kv._1) = _ + kv._2
-      }
-    })
-    attach
   }
 
 
