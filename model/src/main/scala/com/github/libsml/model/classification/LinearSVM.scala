@@ -66,7 +66,7 @@ class SingleLinearSVM(val data: Array[WeightedLabeledVector]) extends Function[V
     var fx: Double = f
     var i = 0
     while (i < data.length) {
-      fx += LinearSVM.gradient(data(i).features, data(i).label, w, sg, data(i).weight)
+      fx += LinearSVM.subGradient(data(i).features, data(i).label, w, sg, data(i).weight)
       i += 1
     }
     (sg, fx)
@@ -117,7 +117,7 @@ class LinearSVM(val data: RDD[WeightedLabeledVector], val reduceNum: Int)
       val gradient: Vector = VectorUtils.newVectorAs(weight)
       while (ds.hasNext) {
         val d = ds.next()
-        loss += LinearSVM.gradient(d.features, d.label, weight, gradient, d.weight)
+        loss += LinearSVM.subGradient(d.features, d.label, weight, gradient, d.weight)
       }
       VectorUtils.vectorWithAttachIterator(gradient, loss)
     }
@@ -144,7 +144,7 @@ object LinearSVM {
    * Compute gradient and loss for a Hinge loss function, as used in SVM binary classification.
    * See also the documentation for the precise formulation.
    */
-  def gradient(x: Vector, label: Double, w: Vector, g: Vector, dw: Double = 1): Double = {
+  def subGradient(x: Vector, label: Double, w: Vector, g: Vector, dw: Double = 1): Double = {
 
     val y = if (label == 1) 1 else -1
     val yz: Double = BLAS.dot(x, w) * y
