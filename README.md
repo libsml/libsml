@@ -43,7 +43,6 @@ val training = splits(0).cache()
 val test = splits(1)
 
 val parallelNum = 2
-val methods = Array("areaUnderROC")
 //Logistic regression with L1 and L2 regularization
 val lr = new LogisticRegression(data, featureNum, parallelNum) + new L1Regularization(1.) + new L2Regularization(1.0)
 //Logistic regression with L1 regularization
@@ -63,14 +62,25 @@ val w = Vector()
 
 //Using L-BFGS as optimizer
 val op = new LBFGS(w, conf, lr)
+
 //Using TRON as optimizer
 //Note: TRON doesn't support L1 regularization
 //val op = new Tron(w, new LiblinearParameter(), lr)
+
+//AUC evaluator
+val evaluator = new BinaryDefaultEvaluator(Left(test),Array("areaUnderROC"), testOutput = Some(System.out))
+
 val logisticRegressionModel = new LogisticRegressionModel()
 for (r <- op) {
     logisticRegressionModel.update(r.w)
     evaluator.evaluator(logisticRegressionModel)
 }
+
+//Get the last iteration result
+//val (w,loss) = op.optimize()
+//logisticRegressionMode.update(w)
+
+
 logisticRegressionModel.save("lr_model")
 
 ```
