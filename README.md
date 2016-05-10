@@ -64,8 +64,8 @@ val w = Vector()
 //Using L-BFGS as optimizer
 val op = new LBFGS(w, conf, lr)
 //Using TRON as optimizer
-//Note:TRON doesn't support L1 regularization
-//val op = new Tron(Vector(), new LiblinearParameter(), lr)
+//Note: TRON doesn't support L1 regularization
+//val op = new Tron(w, new LiblinearParameter(), lr)
 val logisticRegressionModel = new LogisticRegressionModel()
 for (r <- op) {
     logisticRegressionModel.update(r.w)
