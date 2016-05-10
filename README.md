@@ -44,13 +44,13 @@ val test = splits(1)
 
 val parallelNum = 2
 val methods = Array("areaUnderROC")
-//Logistic Regression with L1 and L2 regularization
+//Logistic regression with L1 and L2 regularization
 val lr = new LogisticRegression(data, featureNum, parallelNum) + new L1Regularization(1.) + new L2Regularization(1.0)
-//Logistic Regression with L1 regularization
+//Logistic regression with L1 regularization
 //val lr = new LogisticRegression(data, featureNum, parallelNum) + new L1Regularization(1.)
-//Logistic Regression with L2 regularization
+//Logistic regression with L2 regularization
 //val lr = new LogisticRegression(data, featureNum, parallelNum) + new L2Regularization(1.)
-//Logistic Regression without regularization
+//Logistic regression without regularization
 //val lr = new LogisticRegression(data, featureNum, parallelNum)
 
 //L-BFGS configuration
@@ -61,7 +61,11 @@ val w = Vector()
 //Using DenseVector
 //val w = Vector(new Array[Double](featureNum))
 
+//Using L-BFGS as optimizer
 val op = new LBFGS(w, conf, lr)
+//Using TRON as optimizer
+//Note:TRON doesn't support L1 regularization
+//val op = new Tron(Vector(), new LiblinearParameter(), lr)
 val logisticRegressionModel = new LogisticRegressionModel()
 for (r <- op) {
     logisticRegressionModel.update(r.w)
