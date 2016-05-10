@@ -66,7 +66,18 @@ object DataUtils {
 
   def loadSVMData2RDD(sc: SparkContext, bias: Double, featureNum: Int, path: String, numPartitions: Int,
                       withWeight: Boolean = false): RDD[WeightedLabeledVector] = {
-    sc.textFile(path, numPartitions).map(_.trim).filter(!_.isEmpty).map(parseSVMLine(_, bias, featureNum))
+    if (numPartitions > 0) {
+      sc.textFile(path, numPartitions).map(_.trim).filter(!_.isEmpty).map(parseSVMLine(_, bias, featureNum))
+    } else {
+      sc.textFile(path).map(_.trim).filter(!_.isEmpty).map(parseSVMLine(_, bias, featureNum))
+    }
+  }
+
+  def loadSVMData2RDD(sc: SparkContext, bias: Double, path: String, numPartitions: Int = -1,
+                      withWeight: Boolean = false): (RDD[WeightedLabeledVector], Int) = {
+    var featureNum = sc.textFile(path).map(_.trim).filter(!_.isEmpty).map(l => parseFeatureNum(l)).max()
+    featureNum = if (bias > 0) featureNum + 1 else featureNum
+    (loadSVMData2RDD(sc, bias, featureNum, path, numPartitions, withWeight), featureNum)
   }
 
   def loadSVMData(bias: Double, path: String): Array[WeightedLabeledVector] = {

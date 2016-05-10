@@ -26,15 +26,49 @@ to fit a machine learning model, such as logistic regression, linear supporting 
 Then the model is evaluated against the test dataset and saved to disk.
 
 ```scala
-import com.github.libsml.model.classification.LogisticRegressionModel
-import com.github.libsml.model.classification.{LogisticRegression, LogisticRegressionModel}
-import com.github.libsml.math.linalg.Vector
 import com.github.libsml.model.data.DataUtils
-import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator, SingleBinaryClassificationMetrics}
+import com.github.libsml.model.evaluation.{BinaryDefaultEvaluator}
 import com.github.libsml.model.regularization.{L1Regularization, L2Regularization}
 import com.github.libsml.optimization.lbfgs.LBFGS
 import com.github.libsml.optimization.liblinear.{LiblinearParameter, Tron}
 import com.github.libsml.math.function.Function._
+import org.apache.spark.{SparkConf, SparkContext}
+
+// Load training data in LIBSVM format.
+val (data, featureNum) = DataUtils.loadSVMData2RDD(sc, 1.0, "data/sample_libsvm_data.txt")
+
+// Split data into training (60%) and test (40%).
+val splits = data.randomSplit(Array(0.6, 0.4), seed = 11L)
+val training = splits(0).cache()
+val test = splits(1)
+
+val parallelNum = 2
+val methods = Array("areaUnderROC")
+//Logistic Regression with L1 and L2 regularization
+val lr = new LogisticRegression(data, featureNum, parallelNum) + new L1Regularization(1.) + new L2Regularization(1.0)
+//Logistic Regression with L1 regularization
+//val lr = new LogisticRegression(data, featureNum, parallelNum) + new L1Regularization(1.)
+//Logistic Regression with L2 regularization
+//val lr = new LogisticRegression(data, featureNum, parallelNum) + new L2Regularization(1.)
+//Logistic Regression without regularization
+//val lr = new LogisticRegression(data, featureNum, parallelNum)
+
+//L-BFGS configuration
+val conf = Map[String,String]("lbfgs.maxIterations"->"100")
+
+//Using MapVector
+val w = Vector()
+//Using DenseVector
+//val w = Vector(new Array[Double](featureNum))
+
+val op = new LBFGS(w, conf, lr)
+val logisticRegressionModel = new LogisticRegressionModel()
+for (r <- op) {
+    logisticRegressionModel.update(r.w)
+    evaluator.evaluator(logisticRegressionModel)
+}
+logisticRegressionModel.save("lr_model")
+
 ```
 
 ##[Distributed L-BFGS](https://github.com/libsml/libsml/tree/master/libsml-lbfgs)
