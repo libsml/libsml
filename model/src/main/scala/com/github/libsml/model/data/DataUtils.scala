@@ -73,11 +73,17 @@ object DataUtils {
     }
   }
 
-  def loadSVMData2RDD(sc: SparkContext, bias: Double, path: String, numPartitions: Int = -1,
-                      withWeight: Boolean = false): (RDD[WeightedLabeledVector], Int) = {
+  def loadSVMData2RDD(sc: SparkContext, bias: Double, path: String, numPartitions: Int,
+                      isWithWeight_ : Boolean): (RDD[WeightedLabeledVector], Int) = {
     var featureNum = sc.textFile(path).map(_.trim).filter(!_.isEmpty).map(l => parseFeatureNum(l)).max()
     featureNum = if (bias > 0) featureNum + 1 else featureNum
-    (loadSVMData2RDD(sc, bias, featureNum, path, numPartitions, withWeight), featureNum)
+    (loadSVMData2RDD(sc, bias, featureNum, path, numPartitions, isWithWeight_), featureNum)
+  }
+
+  def loadSVMData2RDD(sc: SparkContext, bias: Double, path: String): (RDD[WeightedLabeledVector], Int) = {
+    var featureNum = sc.textFile(path).map(_.trim).filter(!_.isEmpty).map(l => parseFeatureNum(l)).max()
+    featureNum = if (bias > 0) featureNum + 1 else featureNum
+    (loadSVMData2RDD(sc, bias, featureNum, path, -1, false), featureNum)
   }
 
   def loadSVMData(bias: Double, path: String): Array[WeightedLabeledVector] = {
